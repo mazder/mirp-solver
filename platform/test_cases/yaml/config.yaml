@@ -1,0 +1,77 @@
+input_data:
+  image_path: "/path/to/input/images/tumor_scan.nii"
+  tumor_segmentation_mask_path: "/path/to/segmentation/masks/tumor_mask.nii"
+  model_input_format: "NIfTI"  # Or any format you're using (e.g., DICOM, HDF5)
+  data_augmentation: true
+  augmentation_parameters:
+    rotation_range: 10  # Degrees
+    zoom_range: 0.1  # Percentage
+    flip: true
+    noise_level: 0.05  # Normal distribution noise
+
+parameters:
+  model_selection:
+    type: "CNN"  # Type of model to be used (e.g., CNN, U-Net, etc.)
+    architecture: "ResNet50"  # Specific architecture used for tumor reconstruction
+    pretrained: true
+    optimizer: "Adam"
+    learning_rate: 0.001
+    batch_size: 32
+    epochs: 50
+    loss_function: "Dice Loss"  # Or another relevant loss function
+    metrics:
+      - "Accuracy"
+      - "Dice Score"
+      - "IoU"
+
+solver_settings:
+  parallel_processing:
+    enable_cpu: true
+    cpu_threads: 8
+    enable_gpu: true
+    gpu_device: 0  # Specify which GPU to use (if multiple GPUs are available)
+    cuda_version: "11.2"
+    cudnn_version: "8.1"
+  checkpoint:
+    save_interval: 5  # Save model every 5 epochs
+    checkpoint_path: "/path/to/save/checkpoints"
+
+image_processing:
+  filtering:
+    enable: true
+    filter_type: "Gaussian"  # Options: Gaussian, Median, etc.
+    filter_size: 3
+  edge_detection:
+    enable: true
+    method: "Canny"  # Options: Canny, Sobel, etc.
+    threshold: 100
+  morphological_operations:
+    enable: true
+    operation: "Dilation"  # Options: Dilation, Erosion
+    kernel_size: 5
+
+image_segmentation:
+  method: "Graph Cut"
+  parameters:
+    max_iterations: 100
+    convergence_threshold: 1e-3
+
+output:
+  visualization:
+    enable: true
+    save_images: true
+    output_directory: "/path/to/output/images"
+    save_format: "PNG"  # Options: PNG, JPEG, etc.
+  results:
+    save_results: true
+    results_file: "/path/to/results/output.json"
+    metrics:
+      - "Accuracy"
+      - "Dice Score"
+      - "IoU"
+      - "Volume"
+
+logs:
+  enable: true
+  log_level: "INFO"  # Options: DEBUG, INFO, WARN, ERROR
+  log_file: "/path/to/logs/project_log.txt"

@@ -1,0 +1,72 @@
+How to Install Nvidia-Docekr
+This method also works well for adding the NVIDIA Docker repository and GPG key. Here's the process using the steps you've outlined:
+
+Step 1: Add the NVIDIA GPG key
+This will add the public GPG key for NVIDIA Docker to your trusted keyring.
+
+bash
+Copy code
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+Step 2: Add the NVIDIA Docker repository for your distribution
+You can dynamically get your distribution name and version, then use that to set up the correct repository list for nvidia-docker:
+
+bash
+Copy code
+distribution=$(. /etc/os-release; echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | \
+  sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+Step 3: Update your apt package list
+After adding the repository, update your package list to include the new sources:
+
+bash
+Copy code
+sudo apt-get update
+Step 4: Install nvidia-docker2
+Now, you can install nvidia-docker2:
+
+bash
+Copy code
+sudo apt-get install -y nvidia-docker2
+Step 5: Restart the Docker service
+Once installed, restart Docker to apply the changes:
+
+bash
+Copy code
+sudo systemctl restart docker
+Step 6: Verify the installation
+Finally, verify that everything is set up correctly:
+
+bash
+Copy code
+docker --version
+nvidia-smi
+The docker --version should return your Docker version, and nvidia-smi should show the NVIDIA driver and GPU information.
+
+Let me know how it goes!
+
+
+You said:
+I had docker engine before, how do I know now it nvidia-docker 
+ChatGPT said:
+ChatGPT
+To verify if NVIDIA Docker (nvidia-docker2) is correctly installed and configured on your system, follow these steps:
+
+Step 1: Check for NVIDIA Docker Support in Docker
+After installing nvidia-docker2, Docker will support the --gpus flag. You can verify if this is working by running:
+
+bash
+Copy code
+docker info | grep -i nvidia
+If you see an output related to NVIDIA, like Runtimes: nvidia, it means that Docker is correctly configured to use the NVIDIA runtime. Example:
+
+bash
+Copy code
+Runtimes: nvidia runc
+Step 2: Test with a CUDA Container
+The most direct way to confirm that Docker is using NVIDIA’s runtime is by running a container that requires access to the GPU. You can try running a test container with GPU access.
+
+For example, try running the nvidia/cuda container:
+
+bash
+Copy code
+sudo docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
