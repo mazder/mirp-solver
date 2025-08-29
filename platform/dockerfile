@@ -255,3 +255,5 @@ RUN apt-get update && apt-get install -y pybind11-dev build-essential \
     libgmp-dev libmpfr-dev libmpc-dev flex texinfo libisl-dev wget && \
     apt-get clean
 
+RUN python3.13 -m pip install --upgrade pip setuptools wheel && \
+    python3.13 -m pip install pybind11==2.13.6

@@ -82,13 +82,12 @@ link_directories(${CGNS_DIR}/lib ${Python3_LIBRARY_DIRS} /usr/local/lib)
 # Specify the include directories for your project
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/include/solve
-    ${PROJECT_SOURCE_DIR}/include/setup
     ${CGNS_DIR}/include
     ${PROJECT_SOURCE_DIR}/src
     ${CUDA_TOOLKIT_INCLUDE}
     ${Python3_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
+    /usr/local/lib/python3.13/dist-packages/pybind11/include
 )
 
 # Set CUDA flags (adjust according to your GPU architecture)
@@ -98,6 +97,10 @@ set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -O3 -gencode arch=compute_${CUDA_ARCH_BI
 
 # Add source files for your project
 set(SOURCES
+    # Utils
+    src/utils/io_utils.cpp
+    # Setup
+    src/setup/preprocessing.cpp
     src/app/main.cpp
 )
 

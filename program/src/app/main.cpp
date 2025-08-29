@@ -3,7 +3,15 @@
 #include <string>
 #include <memory>
 #include <cstring>
+#include "utils/io_utils.hpp"
+#include "setup/preprocessing.hpp"
 
+
+void cgns_driver(const std::string& projectPath){
+    std::string cgnspath=projectPath + std::string("/data/setup.cgns");
+    std::string jsonpath=projectPath + std::string("/em_data/setup.json");
+    IOUtils::writeJSONToCGNS(cgnspath, jsonpath);
+}
 
 int main(int argc, char* argv[]) {
     std::cout << "Number of arguments: " << argc << std::endl;
@@ -29,7 +37,15 @@ int main(int argc, char* argv[]) {
 
     const std::string command = argv[1];
     std::cout << "Executing command <::> "<< command << std::endl;
-    
+
+
+    if (command == "cgns") {
+        std::cout << "Testing CGNS generation..." << std::endl;
+        cgns_driver(projectPath);
+    }
+
+
+
     return 0;
 }
 
