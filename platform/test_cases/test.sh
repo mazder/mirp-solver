@@ -68,3 +68,7 @@ cd ..
 
 python3 -c 'import nibabel, pydicom, PIL, numpy; print("all good!")'
 
+source /opt/venv_py310/bin/activate
+nnUNetv2_train --help
+deactivate
+

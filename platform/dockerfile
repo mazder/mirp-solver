@@ -260,3 +260,106 @@ RUN python3.13 -m pip install --upgrade pip setuptools wheel && \
 
 # Install Python packages required for DICOM → NIfTI → PNG
 RUN python3.13 -m pip install --no-cache-dir nibabel pydicom pillow numpy
+
+# For NNUnet
+# ===== Install Python 3.10 alongside Python 3.13 =====
+RUN apt-get update && \
+    apt-get install -y python3.10 python3.10-venv python3.10-dev python3.10-distutils && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create a venv with Python 3.10
+RUN python3.10 -m venv /opt/venv_py310 && \
+    /opt/venv_py310/bin/pip install --upgrade pip setuptools wheel
+
+# Verify
+RUN python3.10 --version
+
+
+# ===== Install GCC 14 (isolated) =====
+RUN cd /opt && \
+    wget https://ftp.gnu.org/gnu/gcc/gcc-14.3.0/gcc-14.3.0.tar.gz && \
+    tar -xzf gcc-14.3.0.tar.gz && \
+    cd gcc-14.3.0 && \
+    ./contrib/download_prerequisites && \
+    mkdir build && cd build && \
+    ../configure --prefix=/opt/gcc-14 --enable-languages=c,c++ --disable-multilib && \
+    make -j$(nproc) && make install && \
+    rm -rf /opt/gcc-14.3.0 /opt/gcc-14.3.0.tar.gz
+
+RUN export PATH=/opt/gcc-14/bin:$PATH
+RUN export LD_LIBRARY_PATH=/opt/gcc-14/lib64:$LD_LIBRARY_PATH
+RUN gcc --version
+
+# ===== n88util =====
+RUN git clone https://github.com/Numerics88/n88util.git /opt/n88util && \
+    cd /opt/n88util && mkdir build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release \
+             -DCMAKE_C_COMPILER=/opt/gcc-14/bin/gcc \
+             -DCMAKE_CXX_COMPILER=/opt/gcc-14/bin/g++ \
+             -DCMAKE_CXX_STANDARD=20 && \
+    make -j$(nproc) && make install && \
+    cd /opt && rm -rf /opt/n88util
+
+# ===== AimIO =====
+RUN git clone https://github.com/Numerics88/AimIO.git /opt/AimIO && \
+    cd /opt/AimIO && mkdir build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release \
+             -DCMAKE_C_COMPILER=/opt/gcc-14/bin/gcc \
+             -DCMAKE_CXX_COMPILER=/opt/gcc-14/bin/g++ \
+             -DCMAKE_CXX_STANDARD=20 && \
+    make -j$(nproc) && make install && \
+    cd /opt && rm -rf /opt/AimIO
+
+# ===== pQCTIO =====
+RUN git clone https://github.com/Numerics88/pQCTIO.git /opt/pQCTIO && \
+    cd /opt/pQCTIO && mkdir build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release \
+             -DCMAKE_C_COMPILER=/opt/gcc-14/bin/gcc \
+             -DCMAKE_CXX_COMPILER=/opt/gcc-14/bin/g++ \
+             -DCMAKE_CXX_STANDARD=20 && \
+    make -j$(nproc) && make install && \
+    cd /opt && rm -rf /opt/pQCTIO
+
+# ===== Google Test =====
+RUN git clone https://github.com/google/googletest.git /opt/googletest && \
+    cd /opt/googletest && mkdir build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release \
+             -DCMAKE_C_COMPILER=/opt/gcc-14/bin/gcc \
+             -DCMAKE_CXX_COMPILER=/opt/gcc-14/bin/g++ \
+             -DCMAKE_CXX_STANDARD=20 && \
+    make -j$(nproc) && make install && \
+    cd /opt && rm -rf /opt/googletest
+
+# ====== Install netCDF-C (with CMake support) ======
+RUN apt-get update && apt-get install -y \
+    libnetcdf-dev \
+    netcdf-bin
+
+# ===== VTKbone =====
+RUN git clone https://github.com/Numerics88/vtkbone.git /opt/vtkbone && \
+    cd /opt/vtkbone && mkdir build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release \
+             -DVTKBONE_BUILD_PYTHON_BINDINGS=ON \
+             -DCMAKE_INSTALL_PREFIX=/opt/VTKbone \
+             -DBUILD_SHARED_LIBS=ON && \
+    make -j$(nproc) && make install && \
+    cd /opt && rm -rf /opt/vtkbone
+
+RUN ln -sf /opt/VTKbone/lib/libvtkbone-9.5.so.2.0.0 /opt/VTKbone/lib/libvtkbone.so
+ENV LD_LIBRARY_PATH="/opt/VTKbone/lib:$LD_LIBRARY_PATH"
+
+# ===== Ogo =====
+RUN cd /opt && \
+    git clone https://github.com/Bonelab/Ogo.git && \
+    cd Ogo && \
+    pip install -e . && \
+    rm -rf /opt/Ogo
+
+# Upgrade pip in the existing venv
+RUN /opt/venv_py310/bin/pip install --upgrade pip
+
+# Install nnUNet inside the venv
+RUN cd /opt && \
+    git clone https://github.com/MIC-DKFZ/nnUNet.git && \
+    /opt/venv_py310/bin/pip install -e /opt/nnUNet
+
