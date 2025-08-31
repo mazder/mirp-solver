@@ -22,7 +22,8 @@ int main(int argc, char* argv[]) {
     // Check if PROJECT_PATH is defined via CMake
 #ifdef PROJECT_PATH
     const std::string projectPath = PROJECT_PATH;
-    std::cout << "Project Path: " << projectPath << std::endl;
+    const std::string basePath = projectPath.substr(0, projectPath.find_last_of("/"));
+    std::cout << "Project Path: " << projectPath << "Base Path: " << basePath << std::endl;
 #else
     std::cerr << "PROJECT_PATH is not defined!" << std::endl;
     return 1;
@@ -44,7 +45,22 @@ int main(int argc, char* argv[]) {
         cgns_driver(projectPath);
     }
 
-
+    std::unique_ptr<preprocessing> preproc = std::make_unique<preprocessing>();
+    if (command == "DICOMPNG") {
+        std::cout << "Running DICOM to PNG Conversion..." << std::endl;
+        preproc->convert_dicom_to_png(basePath);
+    }
+    else if (command == "PNGFOLDS") {
+        std::cout << "Running PNG to FOLDS Creation..." << std::endl;
+        preproc->create_png_to_folds(basePath);
+    }
+    else if (command == "PNGFOLDS_RR") {
+        std::cout << "Running PNG to FOLDS (Round Robin) Creation..." << std::endl;
+        preproc->create_png_to_folds_rr(basePath);
+    }
+    else{
+        std::cerr << "Unrecognized command to execute ..." << std::endl;
+    }
 
     return 0;
 }

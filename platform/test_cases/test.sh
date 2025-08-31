@@ -66,3 +66,5 @@ cd ..
 rm -rf build
 cd ..
 
+python3 -c 'import nibabel, pydicom, PIL, numpy; print("all good!")'
+

@@ -257,3 +257,6 @@ RUN apt-get update && apt-get install -y pybind11-dev build-essential \
 
 RUN python3.13 -m pip install --upgrade pip setuptools wheel && \
     python3.13 -m pip install pybind11==2.13.6
+
+# Install Python packages required for DICOM → NIfTI → PNG
+RUN python3.13 -m pip install --no-cache-dir nibabel pydicom pillow numpy

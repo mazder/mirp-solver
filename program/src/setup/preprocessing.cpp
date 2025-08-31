@@ -29,13 +29,33 @@ preprocessing::~preprocessing()
     //dtor
 }
 
-void preprocessing::dicom_to_png(const std::string& in_path,const std::string& out_path)
+void preprocessing::convert_dicom_to_png(const std::string& basePath)
 {
-    std::string command=std::string("python3 ") + PROJECT_PATH + std::string("/src/setup/preprocess/main.py") + PROJECT_PATH;
+    std::string command=std::string("python3 ") + PROJECT_PATH + std::string("/src/setup/preprocess.py dicompng ") + basePath;
+    std::cout << "command >> "<<command<< std::endl;
     if (system(command.c_str()) != 0) {
         std::cerr << "Error executing Python script!" << std::endl;
         exit(0);
     }
 }
+void preprocessing::create_png_to_folds(const std::string& basePath)
+{
+    std::string command=std::string("python3 ") + PROJECT_PATH + std::string("/src/setup/preprocess.py pngfolds ") + basePath;
+    std::cout << "command >> "<<command<< std::endl;
+    if (system(command.c_str()) != 0) {
+        std::cerr << "Error executing Python script!" << std::endl;
+        exit(0);
+    }
+}
+void preprocessing::create_png_to_folds_rr(const std::string& basePath)
+{
+    std::string command=std::string("python3 ") + PROJECT_PATH + std::string("/src/setup/preprocess.py pngfolds_rr ") + basePath;
+    std::cout << "command >> "<<command<< std::endl;
+    if (system(command.c_str()) != 0) {
+        std::cerr << "Error executing Python script!" << std::endl;
+        exit(0);
+    }
+}
+
 
 

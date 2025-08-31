@@ -1,0 +1,49 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.egg-info/
+*.egg
+*.log
+
+# --- Virtual envs ---
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# --- Jupyter ---
+.ipynb_checkpoints
+
+# --- Build / Packaging ---
+build/
+dist/
+*.spec
+
+# --- OS Files ---
+.DS_Store
+Thumbs.db
+
+# --- Simulation / Data Directories ---
+uploads/
+simulation_data/dicom/
+simulation_data/folds/
+simulation_data/folds_round_robin/
+simulation_data/tmp/
+simulation_data/results/
+simulation_data/cache/
+raw_data/dicom
+# --- Logs ---
+logs/
+*.out
+*.err
+
+# --- IDEs ---
+.vscode/
+.idea/
+*.swp
