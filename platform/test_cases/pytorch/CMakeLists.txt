@@ -16,12 +16,6 @@ set(CUDNN_LIB_DIR "/usr/local/cuda/lib64")
 set(CUDA_PATH "/usr/local/cuda")
 
 set(USE_CUDNN 1)
-# NVTX3 headers
-set(nvtx3_dir "/usr/local/cuda/include/nvtx3")
-include_directories(${nvtx3_dir})
-
-set(CUDA_NVRTC_LIB /usr/local/cuda-12.1/targets/x86_64-linux/lib/libnvrtc.so)
-link_directories(${CUDA_NVRTC_LIB})
 
 # Add CUDA and cuDNN include directories
 include_directories(
@@ -45,7 +39,6 @@ link_directories(
     ${CUDNN_LIB_DIR}
     ${TORCH_PATH}/lib
     ${CUDA_PATH}/lib64  # Include CUDA lib64 path for linking
-    ${CUDA_NVRTC_LIB}
 )
 
 # Enable CUDA language support

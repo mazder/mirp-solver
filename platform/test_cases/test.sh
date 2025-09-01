@@ -66,9 +66,10 @@ cd ..
 rm -rf build
 cd ..
 
-python3 -c 'import nibabel, pydicom, PIL, numpy; print("all good!")'
+export PATH=/opt/gcc-14/bin:$PATH
+export LD_LIBRARY_PATH=/opt/gcc-14/lib64:$LD_LIBRARY_PATH
+python3 -c 'import nibabel, vtk, vtkbone, pydicom, PIL, numpy; print("all good!")'
 
-source /opt/venv_py310/bin/activate
+source /opt/venv_unet/bin/activate
 nnUNetv2_train --help
 deactivate
-

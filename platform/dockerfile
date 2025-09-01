@@ -1,40 +1,38 @@
+# Use the official NVIDIA CUDA base image with CUDA 12.1 and cuDNN 8 (development version)
+FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu20.04
 
-# =========================
-# Stage 1: Build dependencies
-# =========================
-FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
-
+# Set environment variables for non-interactive installations
 ENV DEBIAN_FRONTEND=noninteractive
-WORKDIR /workspace
 
 # Step 1: Install software-properties-common to use add-apt-repository
 RUN apt update && \
-    apt install -y software-properties-common curl && \
-    rm -rf /var/lib/apt/lists/*
+    apt install -y software-properties-common
 
 ####################################
-# Install latest Python 3.13
-####################################
+# Step 2: Add the deadsnakes PPA and install Python 3.9
 RUN add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get update && \
-    apt-get install -y python3.13 python3.13-venv python3.13-dev && \
-    # make Python 3.13 default without touching 3.12
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 2 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.13 2
+    apt update && \
+    apt install -y python3.9 python3.9-venv python3.9-dev && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1 && \
+    update-alternatives --config python3
 
-# Install pip for Python 3.13
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-    python3 get-pip.py && rm get-pip.py
+RUN apt update && \
+    apt install -y curl
 
-####################################
-# Install system dependencies
-####################################
+# Step 3: Install pip for Python 3.9 (may not be installed automatically)
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3.9 get-pip.py && \
+    rm get-pip.py
+
+# Install system dependencies, build tools, and libraries required
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
     git \
     wget \
     unzip \
+    python3-dev \
+    python3-pip \
     python3-setuptools \
     libjpeg-dev \
     libpng-dev \
@@ -73,9 +71,8 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-####################################
-# Build and install CMake
-####################################
+
+# Download, extract and build CMake
 RUN cd /opt && \
     wget https://github.com/Kitware/CMake/releases/download/v3.31.5/cmake-3.31.5.tar.gz && \
     tar -xzvf cmake-3.31.5.tar.gz && \
@@ -88,61 +85,58 @@ RUN cd /opt && \
 ENV PATH="/opt/cmake/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/cmake/lib:${LD_LIBRARY_PATH}"
 
-####################################
 # Download and install MPICH from source
-####################################
 RUN cd /opt && \
     wget https://www.mpich.org/static/downloads/4.2.3/mpich-4.2.3.tar.gz && \
     tar -xzf mpich-4.2.3.tar.gz && \
     cd mpich-4.2.3 && \
     ./configure --prefix=/opt/mpich --enable-shared --enable-fortran --enable-cxx && \
     make -j$(nproc) && \
-    make install && \
-    rm -rf /opt/mpich-4.2.3.tar.gz /opt/mpich-4.2.3
+    make install
 
+# Add MPICH binaries to the system PATH
 ENV PATH="/opt/mpich/bin:$PATH"
 ENV LD_LIBRARY_PATH="/opt/mpich/lib:$LD_LIBRARY_PATH"
+RUN rm -rf /opt/mpich-4.2.3.tar.gz /opt/mpich-4.2.3
 
-####################################
-# Download and install HDF5 with MPI
-####################################
-RUN cd /opt && \
-    wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz && \
-    tar -xzf hdf5-1.12.0.tar.gz && \
-    cd hdf5-1.12.0 && \
-    ./configure --prefix=/opt/hdf5 \
-        MPICC=/opt/mpich/bin/mpicc \
-        MPIFC=/opt/mpich/bin/mpifort \
-        LDFLAGS="-L/opt/mpich/lib -lmpi" \
-        CPPFLAGS="-I/opt/mpich/include" \
-        --enable-shared \
-        --enable-parallel \
-        --enable-hl \
-        --enable-fortran \
-        --enable-cxx \
-        --enable-unsupported && \
+RUN cd /opt  && \
+    wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz  && \
+    tar -xzf hdf5-1.12.0.tar.gz  && \
+    cd hdf5-1.12.0  && \
+    ./configure --prefix=/opt/hdf5  \
+       MPICC=/opt/mpich/bin/mpicc   \
+       MPIFC=/opt/mpich/bin/mpifort  \
+       LDFLAGS="-L/opt/mpich/lib -lmpi"  \
+       CPPFLAGS="-I/opt/mpich/include" \
+       --enable-shared   \
+       --enable-parallel   \
+       --enable-hl  \
+       --enable-fortran   \
+       --enable-cxx  \
+       --enable-unsupported && \
     make -j$(nproc) && \
     make install && \
     rm -rf /opt/hdf5-1.12.0.tar.gz /opt/hdf5-1.12.0
 
-# Add HDF5 to PATH and library search paths
+ # Add HDF5 binaries and libraries to the system PATH and LD_LIBRARY_PATH
 ENV PATH="/opt/hdf5/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/hdf5/lib:${LD_LIBRARY_PATH}"
-ENV HDF5_INCLUDE_DIR="/opt/hdf5/include"
+ENV HDF5_INCLUDE_DIR=/opt/hdf5/include
 
 # Build and install VTK
 RUN cd /opt && \
     git clone https://gitlab.kitware.com/vtk/vtk.git CVTK && \
     cd CVTK && \
     git submodule update --init && \
-    mkdir build && cd build && \
+    mkdir build && \
+    cd build && \
     cmake .. \
       -DVTK_RENDERING_PYTHON_TK_WIDGETS=ON \
       -DVTK_Group_Rendering=ON \
       -DVTK_USE_OPENGL=ON \
       -DVTK_USE_GL2PS=ON \
       -DVTK_WRAP_PYTHON=ON \
-      -DPYTHON_EXECUTABLE=/usr/bin/python3.13 \
+      -DPYTHON_EXECUTABLE=/usr/bin/python3 \
       -DVTK_GROUP_IO=ON \
       -DVTK_USE_VTKDICOM=ON \
       -DVTK_USE_VTKSTL=ON \
@@ -164,8 +158,8 @@ RUN cd /opt && \
 
 # Set environment variables for VTK
 ENV PATH=/opt/vtk/bin:$PATH
-ENV LD_LIBRARY_PATH=/opt/vtk/lib:${LD_LIBRARY_PATH}
-ENV PYTHONPATH=/opt/vtk/lib/python3.13/site-packages:${PYTHONPATH}
+ENV LD_LIBRARY_PATH=/opt/vtk/lib:$LD_LIBRARY_PATH
+ENV PYTHONPATH=/opt/vtk/lib/python3.9/site-packages:$PYTHONPATH
 
 RUN apt-get update && apt-get install -y \
     libopencv-dev \
@@ -174,18 +168,19 @@ RUN apt-get update && apt-get install -y \
     libopencv-highgui-dev \
     && apt-get clean
 
-# Install Python libraries for PyTorch and OpenCV using Python 3.13
-RUN python3.13 -m pip install --upgrade pip && \
-    python3.13 -m pip install torch torchvision torchaudio && \
-    python3.13 -m pip install opencv-python-headless && \
-    python3.13 -m pip install opencv-contrib-python-headless
+# Install Python libraries for PyTorch and OpenCV
+RUN pip3 install --upgrade pip && \
+    pip3 install torch torchvision torchaudio && \
+    pip3 install opencv-python-headless && \
+    pip3 install opencv-contrib-python-headless
 
 # Install OpenCV from source to ensure C++ bindings are available
 RUN cd /opt && \
     git clone --recursive https://github.com/opencv/opencv.git && \
     git clone --recursive https://github.com/opencv/opencv_contrib.git && \
     cd opencv && \
-    mkdir build && cd build && \
+    mkdir build && \
+    cd build && \
     cmake -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_INSTALL_PREFIX=/usr/local \
           -D WITH_CUDA=ON \
@@ -206,127 +201,163 @@ RUN cd /opt && \
     unzip libtorch-shared-with-deps-2.5.1+cu121.zip -d /opt/ && \
     rm libtorch-shared-with-deps-2.5.1+cu121.zip
 
-# Copy modified Makefiles for CGNS tools
+# Download and install CGNS TOOLS
 COPY Makefile.unix1 /workspace/Makefile.unix1
 COPY Makefile.unix2 /workspace/Makefile.unix2
 COPY Makefile.unix3 /workspace/Makefile.unix3
-
-# Download, build, and install CGNS
+#modified:   cgnstools/cgnscalc/Makefile.unix
+#modified:   cgnstools/cgnsview/Makefile.unix
+#modified:   cgnstools/utilities/Makefile.unix
 RUN cd /opt && \
     git clone https://github.com/CGNS/CGNS.git && \
     cd CGNS && \
     git checkout v4.1.1 && \
-    cmake -B build -S . -DCMAKE_PREFIX_PATH=/opt/hdf5 -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/cgns && \
-    cmake --build build --target all -j$(nproc) && \
-    mv /opt/hdf5/lib/libhdf5.a /opt/hdf5/lib/libhdf5.a_back && \
+    cmake . -DCMAKE_PREFIX_PATH=/opt/hdf5 -DBUILD_SHARED_LIBS=ON -D CMAKE_INSTALL_PREFIX=/opt/cgns && \
+    make && \
+    export PATH=/opt/cgns/bin:$PATH && \
+    export LD_LIBRARY_PATH=/opt/cgns/lib:$LD_LIBRARY_PATH && \
     cd src && \
+    mv /opt/hdf5/lib/libhdf5.a /opt/hdf5/lib/libhdf5.a_back && \
     ./configure --enable-cgnstools \
-                --prefix=/opt/cgns \
-                --with-tcl=/usr/lib/tcl8.6 \
-                --with-tk=/usr/lib/tk8.6 \
-                --with-hdf5=/opt/hdf5 \
-                LDFLAGS="-L/opt/hdf5/lib -lhdf5 $LDFLAGS" \
-                CFLAGS="-I/opt/mpich/include $CFLAGS" && \
+            --prefix=/opt/cgns \
+            --with-tcl=/usr/lib/tcl8.6 \
+            --with-tk=/usr/lib/tk8.6 \
+            --with-hdf5=/opt/hdf5 \
+            LDFLAGS="-L/opt/hdf5/lib -lhdf5 $LDFLAGS" \
+            CFLAGS="-I/opt/mpich/include $CFLAGS" && \
     cp /workspace/Makefile.unix1 /opt/CGNS/src/cgnstools/cgnscalc/Makefile.unix && \
     cp /workspace/Makefile.unix2 /opt/CGNS/src/cgnstools/cgnsview/Makefile.unix && \
     cp /workspace/Makefile.unix3 /opt/CGNS/src/cgnstools/utilities/Makefile.unix && \
     make -j$(nproc) && \
     make install && \
-    rm -rf /opt/CGNS && \
-    mv /opt/hdf5/lib/libhdf5.a_back /opt/hdf5/lib/libhdf5.a
-
+    # Clean up the source directory to reduce image size
+    rm -rf /opt/CGNS
+RUN mv /opt/hdf5/lib/libhdf5.a_back /opt/hdf5/lib/libhdf5.a
 # Set environment variables for CGNS
 ENV PATH=/opt/cgns/bin:$PATH
-ENV LD_LIBRARY_PATH=/opt/cgns/lib:${LD_LIBRARY_PATH}
+ENV LD_LIBRARY_PATH=/opt/cgns/lib:$LD_LIBRARY_PATH
 
-# Python packages
-RUN pip3 install --upgrade pip && \
-    pip3 install pandas scikit-learn scikit-image matplotlib seaborn \
-                 openpyxl xgboost imbalanced-learn sweetviz catboost lightgbm \
-                 pydicom monai tensorflow
+RUN pip3 install pandas \
+    scikit-learn \
+    scikit-image \
+    matplotlib \
+    seaborn
 
-# cuDNN paths (Python 3.13)
-ENV LD_LIBRARY_PATH=/usr/local/lib/python3.13/dist-packages/nvidia/cudnn/lib:$LD_LIBRARY_PATH
-RUN ln -sf /usr/local/lib/python3.13/dist-packages/nvidia/cudnn/lib/libcudnn.so.9 /usr/lib/x86_64-linux-gnu/libcudnn.so && \
-    ln -sf /usr/local/lib/python3.13/dist-packages/nvidia/cudnn/lib/libcudnn.so.9 /usr/lib/x86_64-linux-gnu/libcudnn.so.9
+RUN python3 -m pip install 'tensorflow[and-cuda]'
 
-# pybind11 and system dependencies
-RUN apt-get update && apt-get install -y pybind11-dev build-essential \
-    libgmp-dev libmpfr-dev libmpc-dev flex texinfo libisl-dev wget && \
-    apt-get clean
+ENV LD_LIBRARY_PATH=/usr/local/lib/python3.9/dist-packages/nvidia/cudnn/lib:$LD_LIBRARY_PATH
+RUN ln -sf /usr/local/lib/python3.9/dist-packages/nvidia/cudnn/lib/libcudnn.so.9 /usr/lib/x86_64-linux-gnu/libcudnn.so
+RUN ln -sf /usr/local/lib/python3.9/dist-packages/nvidia/cudnn/lib/libcudnn.so.9 /usr/lib/x86_64-linux-gnu/libcudnn.so.9
 
-RUN python3.13 -m pip install --upgrade pip setuptools wheel && \
-    python3.13 -m pip install pybind11==2.13.6
+# install pybind
 
-# Install Python packages required for DICOM → NIfTI → PNG
-RUN python3.13 -m pip install --no-cache-dir nibabel pydicom pillow numpy
-
-# For NNUnet
-# ===== Install Python 3.10 alongside Python 3.13 =====
-RUN apt-get update && \
-    apt-get install -y python3.10 python3.10-venv python3.10-dev python3.10-distutils && \
-    rm -rf /var/lib/apt/lists/*
-
-# Create a venv with Python 3.10
-RUN python3.10 -m venv /opt/venv_py310 && \
-    /opt/venv_py310/bin/pip install --upgrade pip setuptools wheel
-
-# Verify
-RUN python3.10 --version
+RUN apt-get update && apt-get install -y \
+    pybind11-dev && \
+    python3 -m pip install openpyxl \
+    && apt-get clean
 
 
-# ===== Install GCC 14 (isolated) =====
-RUN cd /opt && \
+RUN pip3 install xgboost \
+    imbalanced-learn \
+    sweetviz \
+    catboost \
+    lightgbm
+
+RUN pip3 install pydicom \
+    monai
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libgmp-dev \
+    libmpfr-dev \
+    libmpc-dev \
+    flex \
+    texinfo \
+    libisl-dev \
+    wget && \
+    cd /opt && \
+    wget https://ftp.gnu.org/gnu/gcc/gcc-11.3.0/gcc-11.3.0.tar.gz && \
+    tar -xzf gcc-11.3.0.tar.gz && \
+    cd gcc-11.3.0 && \
+    ./contrib/download_prerequisites && \
+    mkdir build && cd build && \
+    ../configure --enable-languages=c,c++ --disable-multilib && \
+    make -j$(nproc) && \
+    make install && \
+    rm -rf /opt/gcc-11.3.0 /opt/gcc-11.3.0.tar.gz
+
+# Use GCC 11 for everything
+ENV CC=/usr/local/bin/gcc
+ENV CXX=/usr/local/bin/g++
+ENV BOOST_ROOT=/usr/include/boost
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libgmp-dev \
+    libmpfr-dev \
+    libmpc-dev \
+    flex \
+    texinfo \
+    libisl-dev \
+    wget && \
+    cd /opt && \
     wget https://ftp.gnu.org/gnu/gcc/gcc-14.3.0/gcc-14.3.0.tar.gz && \
     tar -xzf gcc-14.3.0.tar.gz && \
     cd gcc-14.3.0 && \
     ./contrib/download_prerequisites && \
     mkdir build && cd build && \
     ../configure --prefix=/opt/gcc-14 --enable-languages=c,c++ --disable-multilib && \
-    make -j$(nproc) && make install && \
+    make -j$(nproc) && \
+    make install && \
     rm -rf /opt/gcc-14.3.0 /opt/gcc-14.3.0.tar.gz
+
+#ENV PATH=/opt/gcc-14/bin:$PATH
+#ENV LD_LIBRARY_PATH=/opt/gcc-14/lib64:$LD_LIBRARY_PATH
 
 RUN export PATH=/opt/gcc-14/bin:$PATH
 RUN export LD_LIBRARY_PATH=/opt/gcc-14/lib64:$LD_LIBRARY_PATH
-RUN gcc --version
 
-# ===== n88util =====
+# Optional: Verify GCC version
+RUN gcc --version && g++ --version
+
+# ========== Install n88util ==========
 RUN git clone https://github.com/Numerics88/n88util.git /opt/n88util && \
     cd /opt/n88util && mkdir build && cd build && \
-    cmake .. -DCMAKE_BUILD_TYPE=Release \
-             -DCMAKE_C_COMPILER=/opt/gcc-14/bin/gcc \
-             -DCMAKE_CXX_COMPILER=/opt/gcc-14/bin/g++ \
-             -DCMAKE_CXX_STANDARD=20 && \
+    cmake .. \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=/opt/gcc-14/bin/gcc \
+      -DCMAKE_CXX_COMPILER=/opt/gcc-14/bin/g++ \
+      -DCMAKE_CXX_STANDARD=20 && \
     make -j$(nproc) && make install && \
     cd /opt && rm -rf /opt/n88util
 
-# ===== AimIO =====
+# ========== Install AimIO ==========
 RUN git clone https://github.com/Numerics88/AimIO.git /opt/AimIO && \
     cd /opt/AimIO && mkdir build && cd build && \
-    cmake .. -DCMAKE_BUILD_TYPE=Release \
-             -DCMAKE_C_COMPILER=/opt/gcc-14/bin/gcc \
-             -DCMAKE_CXX_COMPILER=/opt/gcc-14/bin/g++ \
-             -DCMAKE_CXX_STANDARD=20 && \
+    cmake .. \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_COMPILER=/opt/gcc-14/bin/gcc \
+      -DCMAKE_CXX_COMPILER=/opt/gcc-14/bin/g++ \
+      -DCMAKE_CXX_STANDARD=20 && \
     make -j$(nproc) && make install && \
     cd /opt && rm -rf /opt/AimIO
 
-# ===== pQCTIO =====
+# ========== Install pQCTIO ==========
 RUN git clone https://github.com/Numerics88/pQCTIO.git /opt/pQCTIO && \
     cd /opt/pQCTIO && mkdir build && cd build && \
-    cmake .. -DCMAKE_BUILD_TYPE=Release \
-             -DCMAKE_C_COMPILER=/opt/gcc-14/bin/gcc \
-             -DCMAKE_CXX_COMPILER=/opt/gcc-14/bin/g++ \
-             -DCMAKE_CXX_STANDARD=20 && \
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_C_COMPILER=/opt/gcc-14/bin/gcc \
+        -DCMAKE_CXX_COMPILER=/opt/gcc-14/bin/g++ \
+        -DCMAKE_CXX_STANDARD=20 && \
     make -j$(nproc) && make install && \
     cd /opt && rm -rf /opt/pQCTIO
 
-# ===== Google Test =====
+# ========== Install Google Test ==========
 RUN git clone https://github.com/google/googletest.git /opt/googletest && \
     cd /opt/googletest && mkdir build && cd build && \
-    cmake .. -DCMAKE_BUILD_TYPE=Release \
-             -DCMAKE_C_COMPILER=/opt/gcc-14/bin/gcc \
-             -DCMAKE_CXX_COMPILER=/opt/gcc-14/bin/g++ \
-             -DCMAKE_CXX_STANDARD=20 && \
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=Release && \
     make -j$(nproc) && make install && \
     cd /opt && rm -rf /opt/googletest
 
@@ -335,31 +366,39 @@ RUN apt-get update && apt-get install -y \
     libnetcdf-dev \
     netcdf-bin
 
-# ===== VTKbone =====
+# ========== Install vtkbone ==========
 RUN git clone https://github.com/Numerics88/vtkbone.git /opt/vtkbone && \
     cd /opt/vtkbone && mkdir build && cd build && \
-    cmake .. -DCMAKE_BUILD_TYPE=Release \
-             -DVTKBONE_BUILD_PYTHON_BINDINGS=ON \
-             -DCMAKE_INSTALL_PREFIX=/opt/VTKbone \
-             -DBUILD_SHARED_LIBS=ON && \
-    make -j$(nproc) && make install && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DVTKBONE_BUILD_PYTHON_BINDINGS=ON -DCMAKE_INSTALL_PREFIX=/opt/VTKbone -DBUILD_SHARED_LIBS=ON &&\
+    make -j$(nproc) && \
+    make install && \
     cd /opt && rm -rf /opt/vtkbone
 
 RUN ln -sf /opt/VTKbone/lib/libvtkbone-9.5.so.2.0.0 /opt/VTKbone/lib/libvtkbone.so
 ENV LD_LIBRARY_PATH="/opt/VTKbone/lib:$LD_LIBRARY_PATH"
+ENV PYTHONPATH=/opt/VTKbone/lib/python3.9/site-packages:${PYTHONPATH}
 
-# ===== Ogo =====
 RUN cd /opt && \
     git clone https://github.com/Bonelab/Ogo.git && \
     cd Ogo && \
-    pip install -e . && \
-    rm -rf /opt/Ogo
+    pip install -e .
 
-# Upgrade pip in the existing venv
-RUN /opt/venv_py310/bin/pip install --upgrade pip
+RUN pip install nibabel
 
-# Install nnUNet inside the venv
-RUN cd /opt && \
+RUN apt-get update && apt-get install -y python3.10 python3.10-venv python3.10-dev
+# 2. Create venv and install nnUNet inside it
+RUN python3.10 -m venv /opt/venv_unet && \
+    /opt/venv_unet/bin/pip install --upgrade pip && \
+    cd /opt && \
     git clone https://github.com/MIC-DKFZ/nnUNet.git && \
-    /opt/venv_py310/bin/pip install -e /opt/nnUNet
+    /opt/venv_unet/bin/pip install -e /opt/nnUNet
 
+
+# Copy the test image (test.jpg) into the container's workspace
+COPY test.jpeg /workspace/test.jpeg
+
+# Set working directory
+WORKDIR /workspace
+
+# Optional: Run the test script when the container starts
+CMD ["bash"]

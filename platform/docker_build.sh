@@ -15,11 +15,11 @@ if ! nvidia-smi; then
 fi
 
 # Build the Docker image
-docker build -t mirp/covptu-3dr-light-py39-light2:latest .
+docker build -t mirp/covptu-3dr-light-py39-light:latest .
 
 #xhost +local:root
 # Run the Docker container with GPU support
-# sudo docker run --gpus all -it -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --rm -v /home/mazder/mirp-solver:/workspace/mirp-solver mirp/covptu-3dr-light-py39-light2:latest
+# sudo docker run --gpus all -it -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --rm -v /home/mazder/mirp-solver:/workspace/mirp-solver mirp/covptu-3dr-light-py39-light:latest
 
 docker images -f "dangling=true"
 docker image prune -f

@@ -3,6 +3,7 @@ import sys
 import os
 from dicom_png import DicomPng
 from dataset_splitter import DatasetSplitter
+from ../../../FEA_solver/medsolver/ogo/apply_calibration.py import CTCalibration
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
@@ -45,6 +46,13 @@ if __name__ == "__main__":
             seed=42
         )
         splitter.create_round_robin_folds()
-
+    elif mode == "ogocalib":
+        input_image = "sub-verse004_ct.nii.gz"
+        calib_txt = "sub-verse004_0000.txt"
+        output_image = "sub-verse004_ct_calibrated.nii.gz"
+        calib = CTCalibration(input_image, calib_txt, output_image)
+        calib.quick_check()
+        calib.inspect()
+        calib.apply_internal_calibration()
     else:
         print(f"[ERROR] Unknown mode: {mode}")

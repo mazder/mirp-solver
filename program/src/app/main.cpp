@@ -58,6 +58,10 @@ int main(int argc, char* argv[]) {
         std::cout << "Running PNG to FOLDS (Round Robin) Creation..." << std::endl;
         preproc->create_png_to_folds_rr(basePath);
     }
+    else if (command == "OGOCALIB") {
+        std::cout << "Running OGO Callibration..." << std::endl;
+        preproc->ogo_calibration(basePath);
+    }
     else{
         std::cerr << "Unrecognized command to execute ..." << std::endl;
     }

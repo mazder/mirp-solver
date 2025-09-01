@@ -57,5 +57,16 @@ void preprocessing::create_png_to_folds_rr(const std::string& basePath)
     }
 }
 
+void preprocessing::ogo_callibration(const std::string& basePath)
+{
+    std::string command=std::string("python3 ") + PROJECT_PATH + std::string("/src/setup/preprocess.py ogocalib ") + basePath;
+    std::cout << "command >> "<<command<< std::endl;
+    if (system(command.c_str()) != 0) {
+        std::cerr << "Error executing Python script!" << std::endl;
+        exit(0);
+    }
+}
+
+
 
 
