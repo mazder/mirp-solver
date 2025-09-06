@@ -1,36 +1,24 @@
-cmake_minimum_required(VERSION 3.15)
-project(MFEMExample1 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.16)
+project(ex1 LANGUAGES CXX)
 
-# Use C++17 (required by MFEM)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Find MFEM
+find_package(MFEM REQUIRED HINTS /usr/local /usr/local/lib/cmake/mfem /opt/mfem)
 
-# Set 64-bit METIS index/real types
-add_compile_definitions(IDXTYPEWIDTH=64)
-add_compile_definitions(REALTYPEWIDTH=64)
-
-# Specify MFEM installation directory
-set(MFEM_DIR "/opt/mfem")  # Update if MFEM is elsewhere
-
-# Include MFEM headers
-include_directories(${MFEM_DIR})
-link_directories(${MFEM_DIR})
-
-# Locate METIS
-find_path(METIS_INCLUDE_DIR metis.h)
-find_library(METIS_LIBRARY NAMES metis)
-
-if(NOT METIS_INCLUDE_DIR OR NOT METIS_LIBRARY)
-    message(FATAL_ERROR "METIS not found. Make sure libmetis-dev is installed.")
-endif()
-include_directories(${METIS_INCLUDE_DIR})
-
-# Add executable
 add_executable(ex1 ex1.cpp)
+target_link_libraries(ex1 PRIVATE mfem)
 
-# Link libraries: MFEM first, METIS after (important!)
-target_link_libraries(ex1 PRIVATE mfem ${METIS_LIBRARY})
+# CUDA runtime (for cudaLaunchKernel, cublas, cusparse)
+find_package(CUDAToolkit REQUIRED)
+target_link_libraries(ex1 PRIVATE CUDA::cudart CUDA::cublas CUDA::cusparse)
 
-# Link pthread if required by MFEM
-find_package(Threads REQUIRED)
-target_link_libraries(ex1 PRIVATE Threads::Threads)
+# METIS + GKlib (fix gk_* missing symbols)
+target_link_directories(ex1 PRIVATE /opt/metis5/lib /opt/gklib/lib)
+target_link_libraries(ex1 PRIVATE metis gklib)
+
+# Include dirs
+target_include_directories(ex1 PRIVATE
+    /usr/local/cuda/include
+    /opt/metis5/include
+    /opt/gklib/include
+)
+

@@ -284,6 +284,19 @@ RUN export LD_LIBRARY_PATH=/opt/metis5/lib:$LD_LIBRARY_PATH
 RUN export PATH=/opt/metis5/bin:/opt/metis5/include:$PATH
 
 #=================================================
+# Install Hypre
+RUN rm -rf /opt/hypre && cd /opt && \
+    git clone https://github.com/hypre-space/hypre.git && \
+    cd hypre/src && \
+    mkdir build && cd build && \
+    cmake .. \
+        -DCMAKE_INSTALL_PREFIX=/opt/hypre \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DHYPRE_WITH_MPI=ON \
+        -DHYPRE_WITH_CUDA=ON \
+        -DHYPRE_ENABLE_SHARED=ON && \
+    make -j$(nproc) && make install
+
 # ---------------------------
 # Build MFEM with CUDA, MPI, HYPRE, METIS, GKlib
 #----------------------------
@@ -294,6 +307,9 @@ RUN cd /opt && \
         -DMFEM_USE_METIS=ON \
         -DMFEM_USE_METIS_5=ON \
         -DMETIS_DIR=/opt/metis5 \
+        -DMFEM_USE_CUDA=ON \
+        -DMFEM_USE_MPI=ON \
+        -DHYPRE_DIR=/opt/hypre \
         -DCMAKE_INSTALL_PREFIX=/usr/local \
         -DCMAKE_BUILD_TYPE=Release \
         -DBUILD_SHARED_LIBS=OFF && \
