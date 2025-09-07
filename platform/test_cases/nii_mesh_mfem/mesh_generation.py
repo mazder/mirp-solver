@@ -125,6 +125,8 @@ def generate_gmsh_mesh_geo(stl_file, msh_file="tumor_mesh_3d.msh"):
     gmsh.option.setNumber("Mesh.Binary", 0)
 
     gmsh.write(msh_file)
+    #gmsh.write("tumor_mesh.cgns")   # ✅ Added CGNS export; use /opt/gmsh/bin/gmsh tumor_mesh_3d.msh -0 -format cgns -o tumor_mesh.cgns
+    #gmsh.write("tumor_mesh.vtu")    # ✅ Added VTU export does not support because gmsh is not build with VTK support
     gmsh.finalize()
     print(f"✅ 3D GEO mesh saved in MSH v2.2: {msh_file}")
 

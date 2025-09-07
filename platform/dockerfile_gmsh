@@ -339,3 +339,5 @@ RUN wget https://gmsh.info/bin/Linux/gmsh-4.12.2-Linux64.tgz && \
 
 RUN python3 -m pip install --upgrade pip gmsh && \
     ln -s /usr/local/lib/libgmsh.so.4.14 /usr/local/lib/libgmsh.so
+
+RUN python3 -m pip install --upgrade pip trimesh shapely rtree scipy meshio h5py
