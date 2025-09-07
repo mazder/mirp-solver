@@ -315,4 +315,27 @@ RUN cd /opt && \
         -DBUILD_SHARED_LIBS=OFF && \
     make -j$(nproc) && make install
 
+RUN pip install \
+    SimpleITK \
+    itk \
+    pyvista \
+    pyvistaqt
 
+
+# ---- Build dependencies ----
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libx11-dev libxt-dev libxext-dev libxmu-dev libxi-dev \
+    libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libgl2ps-dev \
+    libfreetype6-dev libtbb-dev libfftw3-dev \
+    libdrm-dev libfreeimage-dev \
+    tcl-dev tk-dev tcl tk \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget https://gmsh.info/bin/Linux/gmsh-4.12.2-Linux64.tgz && \
+    tar -xzf gmsh-4.12.2-Linux64.tgz && \
+    mv gmsh-4.12.2-Linux64 /opt/gmsh && \
+    ln -s /opt/gmsh/bin/gmsh /usr/local/bin/gmsh && \
+    rm gmsh-4.12.2-Linux64.tgz
+
+RUN python3 -m pip install --upgrade pip gmsh && \
+    ln -s /usr/local/lib/libgmsh.so.4.14 /usr/local/lib/libgmsh.so
