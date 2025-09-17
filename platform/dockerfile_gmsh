@@ -312,6 +312,7 @@ RUN cd /opt && \
         -DHYPRE_DIR=/opt/hypre \
         -DCMAKE_INSTALL_PREFIX=/usr/local \
         -DCMAKE_BUILD_TYPE=Release \
+        -DMFEM_USE_PARAVIEW=YES \
         -DBUILD_SHARED_LIBS=OFF && \
     make -j$(nproc) && make install
 
