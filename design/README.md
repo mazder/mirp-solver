@@ -22,7 +22,8 @@ It supports CPU and GPU acceleration, MPI-based parallelism, and flexible physic
 
 ## Directory Structure
 
-mirp_sim/
+
+```mirp_sim/
 ├── config/ # CGNS I/O, physics parameter loading
 ├── core/ # Simulation controller, memory manager
 ├── setup/ # Mesh loading, BCs, partitioning
@@ -33,7 +34,7 @@ mirp_sim/
 ├── tests/ # Unit tests
 ├── scripts/ # Python helpers and SLURM launcher
 ├── main.cpp # Entry point
-└── CMakeLists.txt # Build system
+└── CMakeLists.txt # Build system```
 
 ## Build Instructions
 
@@ -45,9 +46,12 @@ Requirements:
 - MFEM library installed and accessible
 - CMake 3.18 or newer
 
-Build steps:
+## Build steps:
 
 ```bash
 mkdir build && cd build
 cmake .. -DUSE_CUDA=ON
-make -j
+make -j```
+
+## Usage
+srun/mpirun -n 4 ./mirp_sim path/to/input.cgns
