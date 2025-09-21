@@ -328,14 +328,29 @@ double ComputeRegionAverageStrainEnergyDensity(Mesh &mesh,
         return 0.0;
 }
 
+double ComputeNormalTraction(const DenseMatrix &stress, const Vector &normal)
+{
+    // Assumes 'stress' is a 3x3 Cauchy stress tensor
+    // and 'normal' is a 3D unit normal vector
+
+    Vector sigma_n(3);
+    stress.Mult(normal, sigma_n);   // σ ⋅ n
+    return sigma_n * normal;        // nᵗ ⋅ (σ ⋅ n)
+}
+
+
 int main(int argc, char *argv[])
 {
     // --- Input options
     const char *mesh_file = "";
     int order = 1;
     const char *device_config = "cpu";
-    double E = 0.005;       // Young's modulus in MPa (5 kPa)
-    double nu = 0.48;       // Poisson's ratio near incompressible
+    // Tumor
+    //double E = 0.005;       // Young's modulus in MPa (5 kPa)
+    //double nu = 0.48;       // Poisson's ratio near incompressible
+    //Bone
+    double E = 15000.0; // 15 GPa = 15000 MPa
+    double nu = 0.3;
 
     OptionsParser args(argc, argv);
     args.AddOption(&mesh_file, "-m", "--mesh", "Mesh file to use.");
@@ -401,8 +416,10 @@ int main(int argc, char *argv[])
 
     // --- Define force vector f = (1,0) or (1,0,0)
     Vector f_vec(dim);
-    f_vec = 0.0;
-    f_vec[0] = 1.03e-5;  // Body force in N/mm³ (density * gravity)
+    f_vec = 0.0; // X, Y , Z
+ //   f_vec[0] = 1.03e-5;  // Body force in N/mm³ (density * gravity)
+    f_vec[2] = -1.7658e-5;  // N/mm³ for bone
+
     VectorConstantCoefficient f_coeff(f_vec);
 
     LinearForm b(&fespace);
@@ -457,7 +474,118 @@ int main(int argc, char *argv[])
         }
     }
 
-    // --- Output to ParaView
+    // --- Create surface mesh from boundary elements (older MFEM version compatible)
+    Mesh *surface_mesh = new Mesh(mesh, true);  // Extracts boundary mesh
+
+    // Build mapping: surface element i → volume element index
+    std::vector<int> surf_to_vol_map;
+    for (int i = 0; i < mesh.GetNBE(); i++)
+    {
+        int elem, info;
+        mesh.GetBdrElementAdjacentElement(i, elem, info);
+        surf_to_vol_map.push_back(elem);
+    }
+    // --- Set up finite element space on the surface mesh
+    int surf_dim = surface_mesh->Dimension();
+    H1_FECollection surf_fec(order, surf_dim);
+    FiniteElementSpace surf_fes(surface_mesh, &surf_fec);
+
+    // --- Project coordinates and compute Laplacian for curvature estimation
+    std::vector<GridFunction*> coords(surf_dim);
+    std::vector<GridFunction*> laplacians(surf_dim);
+    for (int d = 0; d < surf_dim; d++)
+    {
+        // Coordinate component d
+        FunctionCoefficient coord_d([d](const Vector &x) { return x(d); });
+
+        coords[d] = new GridFunction(&surf_fes);
+        coords[d]->ProjectCoefficient(coord_d);
+
+        // Laplace system
+        BilinearForm laplace(&surf_fes);
+        laplace.AddDomainIntegrator(new DiffusionIntegrator);
+        laplace.Assemble();
+        laplace.Finalize();
+
+        LinearForm rhs(&surf_fes);
+        rhs = 0.0;
+
+        laplacians[d] = new GridFunction(&surf_fes);
+        GSSmoother smoother(laplace.SpMat());
+        PCG(laplace.SpMat(), smoother, rhs, *laplacians[d], 0, 200, 1e-12, 0.0);
+    }
+
+    // --- Compute mean curvature = ||Laplace(x), Laplace(y), Laplace(z)||
+    GridFunction mean_curvature(&surf_fes);
+    for (int i = 0; i < surf_fes.GetNDofs(); i++)
+    {
+        double sum_sq = 0.0;
+        for (int d = 0; d < surf_dim; d++)
+        {
+            double val = (*laplacians[d])(i);
+            sum_sq += val * val;
+        }
+        mean_curvature(i) = sqrt(sum_sq);
+    }
+
+    // --- Compute normal traction σₙ and contraction ratio γ = κ * σₙ
+    GridFunction gamma(&surf_fes);           // contraction ratio
+    GridFunction normal_traction(&surf_fes); // normal traction
+    gamma = 0.0;
+    normal_traction = 0.0;
+
+    Vector normal(3);
+    DenseMatrix stress_2(3);
+
+
+    cout << "surface_mesh->GetNE(): " << surface_mesh->GetNE() << endl;
+    cout << "surf_to_vol_map.size(): " << surf_to_vol_map.size() << endl;
+
+    // Loop over surface elements
+    //for (int i = 0; i < surface_mesh->GetNE(); i++)
+    for (int i = 0; i < surf_to_vol_map.size(); i++)
+    {
+        ElementTransformation *T = surface_mesh->GetElementTransformation(i);
+
+        const IntegrationRule &ir = IntRules.Get(T->GetGeometryType(), 1);
+        IntegrationPoint ip = ir.IntPoint(0);
+        T->SetIntPoint(&ip);
+
+        // Compute surface normal
+        CalcOrtho(T->Jacobian(), normal);
+        normal /= normal.Norml2();
+
+        // Get stress tensor from corresponding volume element
+        int volume_elem = surf_to_vol_map[i];
+        if (volume_elem < 0 || volume_elem >= stress.size()) {
+            std::cerr << "Invalid volume element index: " << volume_elem << std::endl;
+            continue;
+        }
+
+        const DenseMatrix &s = stress[volume_elem];
+        stress_2 = s;
+
+        // Compute normal traction σₙ = nᵗ σ n
+        double sigma_n = ComputeNormalTraction(stress_2, normal);
+
+        // Get surface DOFs
+        Array<int> vdofs;
+        surf_fes.GetElementVDofs(i, vdofs);
+
+        // Assign values
+        for (int j = 0; j < vdofs.Size(); j++)
+        {
+            double kappa = mean_curvature(vdofs[j]);
+            if (fabs(kappa) > 1e-3)  // skip nearly flat regions
+            {
+                normal_traction(vdofs[j]) = sigma_n;
+                gamma(vdofs[j]) = kappa * sigma_n;
+            }
+        }
+    }
+
+
+    // --- Output full mesh (volume) data
     ParaViewDataCollection dc("Elasticity", &mesh);
     dc.SetPrefixPath("ParaView");
     dc.RegisterField("displacement", &x);
@@ -465,6 +593,17 @@ int main(int argc, char *argv[])
     dc.SetCycle(0);
     dc.SetTime(0.0);
     dc.Save();
+
+    // --- Output surface mesh data
+    ParaViewDataCollection dc_surf("Surface", surface_mesh);
+    dc_surf.SetPrefixPath("ParaView");
+    dc_surf.RegisterField("mean_curvature", &mean_curvature);
+    dc_surf.RegisterField("normal_traction", &normal_traction);
+    dc_surf.RegisterField("gamma", &gamma);
+    dc_surf.SetCycle(0);
+    dc_surf.SetTime(0.0);
+    dc_surf.Save();
+
 
     cout << "Output saved in 'ParaView/' directory." << endl;
 
