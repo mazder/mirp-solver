@@ -1,0 +1,195 @@
+a high-performance, scalable, and modular FEM simulation framework, using:
+
+✅ C++
+✅ OpenMP (CPU shared memory parallelism)
+✅ MPI (distributed memory parallelism)
+✅ CUDA (GPU offloading)
+✅ Multiple GPUs per node or across nodes
+✅ Controlled via CGNS I/O
+✅ Launched via SLURM tasks on HPC
+
+This is a serious scientific computing platform, and it deserves a robust and future-proof design.
+
+✅ Final Program Design (HPC-Ready + Multi-GPU + Modular)
+
+Here’s a full breakdown of the directory layout, key components, and integration strategy for MPI, OpenMP, and CUDA.
+I'll also explain MPI initialization, device management, and memory control along the way.
+
+📁 Top-Level Directory Structure
+mirp_sim/
+├── CMakeLists.txt                  # Full build system for CPU/GPU/MPI
+├── main.cpp                        # Initializes MPI, GPU device, runs simulation
+
+├── config/                         # Setup from CGNS files
+│   ├── cgns_interface.cpp/hpp      # Read/write mesh, BCs, physics params
+│   ├── physics_loader.cpp/hpp      # Extract material props (bone, tumor, etc.)
+│   └── simulation_config.hpp       # Structs for all loaded config values
+
+├── core/                           # High-level simulation logic
+│   ├── mirp_sim.cpp/hpp            # The main simulation controller class
+│   ├── memory_manager.cpp/hpp      # GPU/CPU memory handler w/ label-based map
+│   └── types.hpp                   # Enums, field tags, solver mode, etc.
+
+├── setup/                          # Mesh, geometry, and DOF setup
+│   ├── mesh_loader.cpp/hpp         # CGNS mesh loader (volume + boundary)
+│   ├── boundary_conditions.cpp/hpp # Load BCs and tag boundaries
+│   ├── field_initializer.cpp/hpp   # Allocate and initialize fields
+│   └── domain_partition.cpp/hpp    # MPI domain decomposition support
+
+├── solve/
+│   ├── cpu/                        # CPU solvers (OpenMP parallel where needed)
+│   │   └── elasticity_solver.cpp/hpp
+
+│   ├── gpu/                        # GPU solvers (MFEM Device / CUDA)
+│   │   ├── elasticity_gpu.cpp/hpp  # MFEM on GPU
+│   │   └── kernels/                # Raw CUDA/HIP kernels (if needed)
+│   │       ├── curvature_kernels.cu
+│   │       └── traction_kernels.cu
+
+│   ├── mpi/                        # Multi-rank coordination, halo exchange
+│   │   └── mpi_solver_driver.cpp/hpp
+
+│   ├── solver_manager.cpp/hpp      # Chooses solver (CPU/GPU/MPI) based on config
+
+├── analysis/
+│   ├── stress_analysis.cpp/hpp     # Stress, strain, von Mises, energy
+│   ├── surface_analysis.cpp/hpp    # Curvature, traction, gamma
+│   ├── region_analysis.cpp/hpp     # Region-based stats
+│   └── result_fields.cpp/hpp       # Field construction for output
+
+├── output/
+│   ├── results_writer.cpp/hpp      # CGNS/VTU output writing
+│   ├── logger.cpp/hpp              # Logging (rank-aware, can be silenced)
+│   └── timers.cpp/hpp              # Timing utilities (per-rank or aggregated)
+
+├── utils/
+│   ├── math_utils.cpp/hpp          # Tensor math, numerical ops
+│   ├── device_utils.cpp/hpp        # CUDA helpers: device selection, sync
+│   └── string_utils.cpp/hpp
+
+├── tests/                          # Unit tests
+│   └── test_memory.cpp
+
+└── scripts/                        # Python helpers (optional)
+    ├── convert_to_cgns.py          # Convert mesh/mask to CGNS
+    └── launch_slurm.sh             # SLURM launcher
+
+🚀 Runtime Phases (Driven by main.cpp)
+1. MPI & GPU Initialization
+MPI_Init(...);
+int rank;
+MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+// Set device for each rank
+DeviceManager::SetDeviceByRank(rank);
+
+// Initialize MFEM (sets device)
+Device device("cuda");  // or "cpu" / "hip"
+mfem::Device::Configure(device);
+
+2. Read Config
+SimulationConfig config = CGNSInterface::Load("input.cgns");
+
+3. Run Simulation
+MirpSim sim(config);
+sim.Run();
+
+4. Finalize
+MPI_Finalize();
+
+🔁 Memory Manager Design
+class MemoryManager {
+public:
+    template<typename T>
+    void Allocate(const std::string& label, size_t n, bool on_device);
+
+    template<typename T>
+    T* Get(const std::string& label);
+
+    void SyncToDevice(const std::string& label);
+    void SyncToHost(const std::string& label);
+    ...
+};
+
+Access Pattern
+
+Allocate shared data globally
+
+Use memory.Get<>() in any module that needs it
+
+Fields like displacement, stress, curvature, region tags, etc.
+
+🧠 Object-Oriented Core (MirpSim)
+class MirpSim {
+public:
+    MirpSim(const SimulationConfig& cfg);
+    void Run();
+
+private:
+    SimulationConfig config;
+    MemoryManager memory;
+
+    MeshHandler mesh;
+    SolverManager solver;
+    PostProcessor post;
+
+    int rank, size;
+};
+
+📡 MPI Integration Points
+
+Domain Partitioning (domain_partition.cpp)
+
+Use ParMesh, ParFiniteElementSpace
+
+Ghost layer setup, ParGridFunction
+
+Parallel Assembly
+
+MFEM handles parallel operator
+
+Multi-GPU
+
+Device set per rank
+
+Each rank uses its own GPU
+
+🔌 SLURM Launch
+
+You can run your job via SLURM like:
+
+srun -n 4 ./mirp_sim input.cgns
+
+
+Or with job script:
+
+#!/bin/bash
+#SBATCH -N 2
+#SBATCH -c 8
+#SBATCH --gres=gpu:4
+#SBATCH --time=01:00:00
+
+srun ./mirp_sim input.cgns
+
+✅ Final Notes
+Feature	Supported?	Notes
+Static elasticity	✅	Linear (bone/tumor)
+Surface curvature	✅	CPU + optional CUDA kernel
+Traction / gamma field	✅	GPU or CPU
+CGNS input/output	✅	Controlled via config/ module
+VTK export	✅	Optional for ParaView
+MPI parallel	✅	ParMesh + ParFES + ParGridFunction
+Multi-GPU	✅	Each MPI rank uses a separate GPU
+OpenMP CPU parallelism	✅	In CPU solver modules
+CUDA GPU acceleration	✅	Via MFEM + raw kernels if needed
+Region-wise materials	✅	Read from CGNS
+
+Would you like:
+
+A CMakeLists.txt scaffold that detects CUDA/MPI/OpenMP?
+
+A Python script to generate this folder structure?
+
+A README.md template for your repo?
+
+Let me know which deliverables you want next.

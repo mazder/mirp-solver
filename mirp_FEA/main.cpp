@@ -346,11 +346,12 @@ int main(int argc, char *argv[])
     int order = 1;
     const char *device_config = "cpu";
     // Tumor
-    //double E = 0.005;       // Young's modulus in MPa (5 kPa)
-    //double nu = 0.48;       // Poisson's ratio near incompressible
+    double E = 0.005;       // Young's modulus in MPa (5 kPa)
+    double nu = 0.48;       // Poisson's ratio near incompressible
+
     //Bone
-    double E = 15000.0; // 15 GPa = 15000 MPa
-    double nu = 0.3;
+//    double E = 15000.0; // 15 GPa = 15000 MPa
+//    double nu = 0.3;
 
     OptionsParser args(argc, argv);
     args.AddOption(&mesh_file, "-m", "--mesh", "Mesh file to use.");
@@ -373,12 +374,13 @@ int main(int argc, char *argv[])
     PrintMeshAttributes(mesh);
 
     int dim = mesh.Dimension();
-    mesh.UniformRefinement();
+//    mesh.UniformRefinement();
 
     // --- FE space: Vector-valued H1
     H1_FECollection fec(order, dim);
     FiniteElementSpace fespace(&mesh, &fec, dim);
 
+/*
     // --- Define boundary conditions
     Array<int> ess_bdr(mesh.bdr_attributes.Max());
     ess_bdr = 0;
@@ -386,6 +388,40 @@ int main(int argc, char *argv[])
     Array<int> ess_tdof_list;
     fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
 
+*/
+    // --- Essential boundary setup (robust)
+    int bmax = mesh.bdr_attributes.Max();           // maximum attribute value (e.g. 2)
+    Array<int> ess_bdr(bmax);
+    ess_bdr = 0;
+
+    // print info for debugging
+    cout << "mesh.bdr_attributes.Max() = " << bmax << endl;
+    cout << "Boundary attributes present: ";
+    for (int i = 1; i <= bmax; ++i)
+    {
+        // test if attribute 'i' actually exists on the mesh boundary elements
+        // (mesh.GetNBE() iterates bdr elements; PrintMeshAttributes() already printed values)
+        cout << (i) << " ";
+    }
+    cout << endl;
+
+    // Mark attribute 2 (your mesh) as essential. If you want to mark attr 1 instead,
+    // change the index accordingly to attr-1.
+    if (bmax >= 2)
+    {
+        ess_bdr[2-1] = 1; // mark boundary attribute = 2
+    }
+    else
+    {
+        // Fallback: mark attribute 1 if only 1 exists
+        ess_bdr[0] = 1;
+    }
+
+    Array<int> ess_tdof_list;
+    fespace.GetEssentialTrueDofs(ess_bdr, ess_tdof_list);
+    cout << "Number of essential true DOFs: " << ess_tdof_list.Size() << endl;
+
+//---------------------------------
     // --- Solution GridFunction (declare BEFORE usage)
     GridFunction x(&fespace);
     x = 0.0;
@@ -396,16 +432,17 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < mesh.GetNBE(); i++) {
         int bdr_attr = mesh.GetBdrAttribute(i);
-        if (bdr_attr == 1) {
+        // Apply the prescribed displacement on the loaded boundary attribute (2),
+        // to match ess_bdr marking which sets attribute 2 as essential.
+        if (bdr_attr == 2) {
             Array<int> vdofs;
             fespace.GetBdrElementVDofs(i, vdofs);  // get boundary dofs for boundary element i
             for (int j = 0; j < vdofs.Size(); j += dim) {
                 // Apply displacement in x-direction (component 0)
-                disp_bc(vdofs[j]) = -0.05;
-                //disp_bc(vdofs[j]) = -0.00098; //-0.001; // or -0.00098 for more precision
-                // If you want to set y or z displacement too, set vdofs[j+1], vdofs[j+2]
+                disp_bc(vdofs[j]) = -0.00098;
             }
         }
+
     }
 
     // Apply essential boundary conditions to solution GridFunction
@@ -417,8 +454,12 @@ int main(int argc, char *argv[])
     // --- Define force vector f = (1,0) or (1,0,0)
     Vector f_vec(dim);
     f_vec = 0.0; // X, Y , Z
- //   f_vec[0] = 1.03e-5;  // Body force in N/mm³ (density * gravity)
-    f_vec[2] = -1.7658e-5;  // N/mm³ for bone
+
+ //tumor
+    f_vec[0] = 1.03e-5;  // Body force in N/mm³ (density * gravity)
+
+ //bone
+ //   f_vec[2] = -1.7658e-5;  // N/mm³ for bone
 
     VectorConstantCoefficient f_coeff(f_vec);
 
@@ -446,7 +487,7 @@ int main(int argc, char *argv[])
 
 #ifndef MFEM_USE_SUITESPARSE
     GSSmoother M((SparseMatrix&)(*A));
-    PCG(*A, M, B, X, 1, 500, 1e-12, 0.0);
+    PCG(*A, M, B, X, 1, 1000, 1e-12, 0.0);
 #else
     UMFPackSolver solver;
     solver.SetOperator(*A);
@@ -454,6 +495,26 @@ int main(int argc, char *argv[])
 #endif
 
     a.RecoverFEMSolution(X, b, x);
+
+//    // --- Form and solve linear system using Hypre AMG preconditioner
+//    OperatorPtr A;
+//    Vector B, X;
+//    a.FormLinearSystem(ess_tdof_list, x, b, A, X, B);
+//
+//    cout << "Linear system size: " << A->Height() << endl;
+//
+//    #ifdef MFEM_HYPRE_VERSION
+//        HypreBoomerAMG amg;
+//        amg.SetPrintLevel(1);   // show convergence info
+//        PCG(*A, amg, B, X, 1, 500, 1e-8, 0.0);
+//    #else
+//        GSSmoother M((SparseMatrix&)(*A));
+//        PCG(*A, M, B, X, 1, 500, 1e-8, 0.0);
+//    #endif
+//
+//    // Recover the solution
+//    a.RecoverFEMSolution(X, b, x);
+
 
     // --- Compute strain and stress tensors per element
     std::vector<DenseMatrix> strain, stress;
@@ -512,7 +573,7 @@ int main(int argc, char *argv[])
 
         laplacians[d] = new GridFunction(&surf_fes);
         GSSmoother smoother(laplace.SpMat());
-        PCG(laplace.SpMat(), smoother, rhs, *laplacians[d], 0, 200, 1e-12, 0.0);
+        PCG(laplace.SpMat(), smoother, rhs, *laplacians[d], 0, 1000, 1e-12, 0.0);
     }
 
     // --- Compute mean curvature = ||Laplace(x), Laplace(y), Laplace(z)||
@@ -620,8 +681,8 @@ int main(int argc, char *argv[])
     cout << "  min: " << min_disp << ", max: " << max_disp
          << ", mean: " << mean_disp << ", stddev: " << stddev_disp << endl;
 
-    // Tumor region assumed attribute = 2 (adjust if needed)
-    int tumor_attr = 2;
+    // Tumor region assumed attribute = 1 (adjust if needed)
+    int tumor_attr = 1;
 
     // Displacement stats in tumor region
     std::vector<double> disp_tumor;
@@ -629,7 +690,7 @@ int main(int argc, char *argv[])
 
     ComputeStats(disp_tumor, min_disp, max_disp, mean_disp, stddev_disp);
 
-    cout << "Tumor region displacement magnitude stats (attr=2):" << endl;
+    cout << "Tumor region displacement magnitude stats (attr=1):" << endl;
     cout << "  min: " << min_disp << ", max: " << max_disp
          << ", mean: " << mean_disp << ", stddev: " << stddev_disp << endl;
 
@@ -650,7 +711,7 @@ int main(int argc, char *argv[])
 
     ComputeStats(vonMises_tumor, min_vm, max_vm, mean_vm, stddev_vm);
 
-    cout << "Tumor region von Mises stress stats (attr=2):" << endl;
+    cout << "Tumor region von Mises stress stats (attr=1):" << endl;
     cout << "  min: " << min_vm << ", max: " << max_vm
          << ", mean: " << mean_vm << ", stddev: " << stddev_vm << endl;
 
@@ -660,7 +721,7 @@ int main(int argc, char *argv[])
 
     // Tumor stiffness estimate = average strain energy density in tumor region
     double tumor_stiffness = ComputeRegionAverageStrainEnergyDensity(mesh, strain, stress, tumor_attr);
-    cout << "Estimated tumor stiffness (avg strain energy density in attr=2): " << tumor_stiffness << endl;
+    cout << "Estimated tumor stiffness (avg strain energy density in attr=1): " << tumor_stiffness << endl;
     //---------------------------time----------------------------
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;

@@ -342,3 +342,7 @@ RUN python3 -m pip install --upgrade pip gmsh && \
     ln -s /usr/local/lib/libgmsh.so.4.14 /usr/local/lib/libgmsh.so
 
 RUN python3 -m pip install --upgrade pip trimesh shapely rtree scipy meshio h5py
+
+# Install Qiskit
+RUN pip install --no-cache-dir qiskit qiskit-ibm-runtime
+RUN pip install pylatexenc matplotlib
