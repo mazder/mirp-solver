@@ -1,0 +1,1 @@
+// Solver manager header
