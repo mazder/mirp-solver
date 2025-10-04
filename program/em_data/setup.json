@@ -1,0 +1,19 @@
+{
+    "solver": {
+        "use_gpu": true,
+        "gpu_id": 0,
+        "cpu_threads": 4,
+        "max_iterations": 1000,
+        "tolerance": 1e-5
+    },
+    "model": {
+        "name": "SegmentationModel",
+        "segmentation_model": "U-Net",
+        "input_dim": [128, 128, 3],
+        "output_dim": [128, 128, 1],
+        "model_file": "model.h5",
+        "batch_size": 32,
+        "learning_rate": 0.001,
+        "optimizer": "Adam"
+    }
+}

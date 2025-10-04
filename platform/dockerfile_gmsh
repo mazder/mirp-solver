@@ -1,0 +1,348 @@
+
+# =========================
+# Stage 1: Build dependencies
+# =========================
+FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /workspace
+
+# Step 1: Install software-properties-common to use add-apt-repository
+RUN apt update && \
+    apt install -y software-properties-common curl && \
+    rm -rf /var/lib/apt/lists/*
+
+####################################
+# Install latest Python 3.13
+####################################
+RUN add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.13 python3.13-venv python3.13-dev && \
+    # make Python 3.13 default without touching 3.12
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 2 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.13 2
+
+# Install pip for Python 3.13
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3 get-pip.py && rm get-pip.py
+
+####################################
+# Install system dependencies
+####################################
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    wget \
+    unzip \
+    python3-setuptools \
+    libjpeg-dev \
+    libpng-dev \
+    libtiff-dev \
+    libdcmtk-dev \
+    libeigen3-dev \
+    libtbb-dev \
+    libatlas-base-dev \
+    gfortran \
+    pkg-config \
+    python3-numpy \
+    libfftw3-dev \
+    libboost-all-dev \
+    libncurses5-dev \
+    libfreetype6-dev \
+    libx11-dev \
+    libxi-dev \
+    libxmu-dev \
+    libgtk-3-dev \
+    libhdf5-dev \
+    libyaml-cpp-dev \
+    lua5.3 \
+    lua5.3-dev \
+    swig \
+    libgtest-dev \
+    libfltk1.3-dev \
+    libsz2 \
+    zlib1g-dev \
+    libssl-dev \
+    vim \
+    freeglut3-dev \
+    mesa-common-dev \
+    gdb \
+    tcl-dev \
+    tk-dev \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+####################################
+# Build and install CMake
+####################################
+RUN cd /opt && \
+    wget https://github.com/Kitware/CMake/releases/download/v3.31.5/cmake-3.31.5.tar.gz && \
+    tar -xzvf cmake-3.31.5.tar.gz && \
+    cd cmake-3.31.5 && \
+    ./bootstrap --prefix=/opt/cmake && \
+    make -j$(nproc) && \
+    make install && \
+    rm -rf /opt/cmake-3.31.5.tar.gz /opt/cmake-3.31.5
+
+ENV PATH="/opt/cmake/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/cmake/lib:${LD_LIBRARY_PATH}"
+
+####################################
+# Download and install MPICH from source
+####################################
+RUN cd /opt && \
+    wget https://www.mpich.org/static/downloads/4.2.3/mpich-4.2.3.tar.gz && \
+    tar -xzf mpich-4.2.3.tar.gz && \
+    cd mpich-4.2.3 && \
+    ./configure --prefix=/opt/mpich --enable-shared --enable-fortran --enable-cxx && \
+    make -j$(nproc) && \
+    make install && \
+    rm -rf /opt/mpich-4.2.3.tar.gz /opt/mpich-4.2.3
+
+ENV PATH="/opt/mpich/bin:$PATH"
+ENV LD_LIBRARY_PATH="/opt/mpich/lib:$LD_LIBRARY_PATH"
+
+####################################
+# Download and install HDF5 with MPI
+####################################
+RUN cd /opt && \
+    wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz && \
+    tar -xzf hdf5-1.12.0.tar.gz && \
+    cd hdf5-1.12.0 && \
+    ./configure --prefix=/opt/hdf5 \
+        MPICC=/opt/mpich/bin/mpicc \
+        MPIFC=/opt/mpich/bin/mpifort \
+        LDFLAGS="-L/opt/mpich/lib -lmpi" \
+        CPPFLAGS="-I/opt/mpich/include" \
+        --enable-shared \
+        --enable-parallel \
+        --enable-hl \
+        --enable-fortran \
+        --enable-cxx \
+        --enable-unsupported && \
+    make -j$(nproc) && \
+    make install && \
+    rm -rf /opt/hdf5-1.12.0.tar.gz /opt/hdf5-1.12.0
+
+# Add HDF5 to PATH and library search paths
+ENV PATH="/opt/hdf5/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/hdf5/lib:${LD_LIBRARY_PATH}"
+ENV HDF5_INCLUDE_DIR="/opt/hdf5/include"
+
+# Build and install VTK
+RUN cd /opt && \
+    git clone https://gitlab.kitware.com/vtk/vtk.git CVTK && \
+    cd CVTK && \
+    git submodule update --init && \
+    mkdir build && cd build && \
+    cmake .. \
+      -DVTK_RENDERING_PYTHON_TK_WIDGETS=ON \
+      -DVTK_Group_Rendering=ON \
+      -DVTK_USE_OPENGL=ON \
+      -DVTK_USE_GL2PS=ON \
+      -DVTK_WRAP_PYTHON=ON \
+      -DPYTHON_EXECUTABLE=/usr/bin/python3.13 \
+      -DVTK_GROUP_IO=ON \
+      -DVTK_USE_VTKDICOM=ON \
+      -DVTK_USE_VTKSTL=ON \
+      -DVTK_USE_VTKTIFF=ON \
+      -DVTK_GROUP_Visualization=ON \
+      -DVTK_RENDERING=ON \
+      -DVTK_USE_CUDA=ON \
+      -DVTK_USE_IMAGE_FILTERS=ON \
+      -DVTK_USE_MPI=ON \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DVTK_BUILD_ALL=ON \
+      -DCMAKE_INSTALL_PREFIX=/opt/vtk \
+      -DVTK_GROUP_ENABLE_Rendering=YES \
+      -DHDF5_DIR=/opt/hdf5/lib/cmake/hdf5 \
+      -DVTK_GROUP_ENABLE_Imaging=YES && \
+    make -j$(nproc) && \
+    make install && \
+    rm -rf /opt/CVTK
+
+# Set environment variables for VTK
+ENV PATH=/opt/vtk/bin:$PATH
+ENV LD_LIBRARY_PATH=/opt/vtk/lib:${LD_LIBRARY_PATH}
+ENV PYTHONPATH=/opt/vtk/lib/python3.13/site-packages:${PYTHONPATH}
+
+RUN apt-get update && apt-get install -y \
+    libopencv-dev \
+    libopencv-core-dev \
+    libopencv-imgcodecs-dev \
+    libopencv-highgui-dev \
+    && apt-get clean
+
+# Install Python libraries for PyTorch and OpenCV using Python 3.13
+RUN python3.13 -m pip install --upgrade pip && \
+    python3.13 -m pip install torch torchvision torchaudio && \
+    python3.13 -m pip install opencv-python-headless && \
+    python3.13 -m pip install opencv-contrib-python-headless
+
+# Install OpenCV from source to ensure C++ bindings are available
+RUN cd /opt && \
+    git clone --recursive https://github.com/opencv/opencv.git && \
+    git clone --recursive https://github.com/opencv/opencv_contrib.git && \
+    cd opencv && \
+    mkdir build && cd build && \
+    cmake -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_INSTALL_PREFIX=/usr/local \
+          -D WITH_CUDA=ON \
+          -D WITH_CUDNN=ON \
+          -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
+          -D BUILD_EXAMPLES=ON \
+          -D INSTALL_C_EXAMPLES=ON \
+          -D INSTALL_PYTHON_EXAMPLES=ON \
+          -D BUILD_opencv_python3=ON .. && \
+    make -j$(nproc) && \
+    make install && \
+    cd /opt && \
+    rm -rf opencv opencv_contrib
+
+# Download and install PyTorch C++ API (LibTorch)
+RUN cd /opt && \
+    wget https://download.pytorch.org/libtorch/cu121/libtorch-shared-with-deps-2.5.1%2Bcu121.zip && \
+    unzip libtorch-shared-with-deps-2.5.1+cu121.zip -d /opt/ && \
+    rm libtorch-shared-with-deps-2.5.1+cu121.zip
+
+# Copy modified Makefiles for CGNS tools
+COPY Makefile.unix1 /workspace/Makefile.unix1
+COPY Makefile.unix2 /workspace/Makefile.unix2
+COPY Makefile.unix3 /workspace/Makefile.unix3
+
+# Download, build, and install CGNS
+RUN cd /opt && \
+    git clone https://github.com/CGNS/CGNS.git && \
+    cd CGNS && \
+    git checkout v4.1.1 && \
+    cmake -B build -S . -DCMAKE_PREFIX_PATH=/opt/hdf5 -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/opt/cgns && \
+    cmake --build build --target all -j$(nproc) && \
+    mv /opt/hdf5/lib/libhdf5.a /opt/hdf5/lib/libhdf5.a_back && \
+    cd src && \
+    ./configure --enable-cgnstools \
+                --prefix=/opt/cgns \
+                --with-tcl=/usr/lib/tcl8.6 \
+                --with-tk=/usr/lib/tk8.6 \
+                --with-hdf5=/opt/hdf5 \
+                LDFLAGS="-L/opt/hdf5/lib -lhdf5 $LDFLAGS" \
+                CFLAGS="-I/opt/mpich/include $CFLAGS" && \
+    cp /workspace/Makefile.unix1 /opt/CGNS/src/cgnstools/cgnscalc/Makefile.unix && \
+    cp /workspace/Makefile.unix2 /opt/CGNS/src/cgnstools/cgnsview/Makefile.unix && \
+    cp /workspace/Makefile.unix3 /opt/CGNS/src/cgnstools/utilities/Makefile.unix && \
+    make -j$(nproc) && \
+    make install && \
+    rm -rf /opt/CGNS && \
+    mv /opt/hdf5/lib/libhdf5.a_back /opt/hdf5/lib/libhdf5.a
+
+# Set environment variables for CGNS
+ENV PATH=/opt/cgns/bin:$PATH
+ENV LD_LIBRARY_PATH=/opt/cgns/lib:${LD_LIBRARY_PATH}
+
+
+
+# Install HYPRE first (shared libraries)
+RUN cd /opt && \
+    git clone https://github.com/hypre-space/hypre.git && \
+    cd hypre/src && \
+    mkdir build && cd build && \
+    cmake .. \
+      -DCMAKE_INSTALL_PREFIX=/opt/hypre \
+      -DHYPRE_WITH_MPI=ON \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_BUILD_TYPE=Release && \
+    make -j$(nproc) && \
+    make install && \
+    cd /opt && rm -rf /opt/hypre/src/build
+
+ENV LD_LIBRARY_PATH=/opt/hypre/lib:$LD_LIBRARY_PATH
+ENV PATH=/opt/hypre/bin:/opt/hypre/include:$PATH
+
+# --- Build GKlib ---
+RUN cd /opt && \
+    git clone https://github.com/KarypisLab/GKlib.git gklib && \
+    cd gklib && \
+    make config prefix=/opt/gklib cc=gcc CFLAGS="-fPIC" && \
+    make -j$(nproc) && make install
+
+RUN ln -s /opt/gklib/lib/libGKlib.a /opt/gklib/lib/libgklib.a
+# --- Build METIS with GKlib linked ---
+RUN cd /opt && \
+    git clone https://github.com/KarypisLab/METIS.git metis && \
+    cd metis && \
+    make config shared=1 cc=gcc prefix=/opt/metis5 gklib_path=/opt/gklib   && \
+    make -j$(nproc) && make install && \
+    cd /opt && rm -rf /opt/metis
+
+ENV LD_LIBRARY_PATH=/opt/metis5/lib:/opt/gklib/lib:$LD_LIBRARY_PATH
+ENV PATH=/opt/gklib/bin:/opt/gklib/include:$PATH
+ENV export PATH=/opt/metis5/bin:/opt/metis5/include:$PATH
+
+RUN export LD_LIBRARY_PATH=/opt/gklib/lib:$LD_LIBRARY_PATH
+RUN export PATH=/opt/gklib/bin:/opt/gklib/include:$PATH
+RUN export LD_LIBRARY_PATH=/opt/metis5/lib:$LD_LIBRARY_PATH
+RUN export PATH=/opt/metis5/bin:/opt/metis5/include:$PATH
+
+#=================================================
+# Install Hypre
+RUN rm -rf /opt/hypre && cd /opt && \
+    git clone https://github.com/hypre-space/hypre.git && \
+    cd hypre/src && \
+    mkdir build && cd build && \
+    cmake .. \
+        -DCMAKE_INSTALL_PREFIX=/opt/hypre \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DHYPRE_WITH_MPI=ON \
+        -DHYPRE_WITH_CUDA=ON \
+        -DHYPRE_ENABLE_SHARED=ON && \
+    make -j$(nproc) && make install
+
+# ---------------------------
+# Build MFEM with CUDA, MPI, HYPRE, METIS, GKlib
+#----------------------------
+RUN cd /opt && \
+    git clone https://github.com/mfem/mfem.git mfem && \
+    mkdir -p mfem/build && cd mfem/build && \
+    cmake .. \
+        -DMFEM_USE_METIS=ON \
+        -DMFEM_USE_METIS_5=ON \
+        -DMETIS_DIR=/opt/metis5 \
+        -DMFEM_USE_CUDA=ON \
+        -DMFEM_USE_MPI=ON \
+        -DHYPRE_DIR=/opt/hypre \
+        -DCMAKE_INSTALL_PREFIX=/usr/local \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DMFEM_USE_PARAVIEW=YES \
+        -DBUILD_SHARED_LIBS=OFF && \
+    make -j$(nproc) && make install
+
+RUN pip install \
+    SimpleITK \
+    itk \
+    pyvista \
+    pyvistaqt
+
+
+# ---- Build dependencies ----
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libx11-dev libxt-dev libxext-dev libxmu-dev libxi-dev \
+    libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libgl2ps-dev \
+    libfreetype6-dev libtbb-dev libfftw3-dev \
+    libdrm-dev libfreeimage-dev \
+    tcl-dev tk-dev tcl tk \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget https://gmsh.info/bin/Linux/gmsh-4.12.2-Linux64.tgz && \
+    tar -xzf gmsh-4.12.2-Linux64.tgz && \
+    mv gmsh-4.12.2-Linux64 /opt/gmsh && \
+    ln -s /opt/gmsh/bin/gmsh /usr/local/bin/gmsh && \
+    rm gmsh-4.12.2-Linux64.tgz
+
+RUN python3 -m pip install --upgrade pip gmsh && \
+    ln -s /usr/local/lib/libgmsh.so.4.14 /usr/local/lib/libgmsh.so
+
+RUN python3 -m pip install --upgrade pip trimesh shapely rtree scipy meshio h5py
+
+# Install Qiskit
+RUN pip install --no-cache-dir qiskit qiskit-ibm-runtime
+RUN pip install pylatexenc matplotlib
