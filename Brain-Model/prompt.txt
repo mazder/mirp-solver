@@ -1,0 +1,1110 @@
+You are working as a senior scientific-computing/HPC software engineer.
+
+Build a complete, robust, reproducible MRI-to-FEM preprocessing and meshing pipeline for a brain tumor dataset.
+
+The project must use Python and Gmsh and must produce a conforming 5-region voxel-based FEM mesh suitable for later use with MFEM or another finite-element solver.
+
+Do not create partial snippets. Create complete runnable source files.
+
+Do not silently modify the original medical imaging data.
+
+============================================================
+
+1. PROJECT LOCATION
+   ============================================================
+
+Assume this repository layout:
+
+Brain-Model/
+├── EGD-0001/
+│   └── MR_EGD-0001/
+│       ├── 1_T1/
+│       │   └── NIFTI/
+│       │       └── T1.nii.gz
+│       ├── 2_T1GD/
+│       │   └── NIFTI/
+│       │       └── T1GD.nii.gz
+│       ├── 3_T2/
+│       │   └── NIFTI/
+│       │       └── T2.nii.gz
+│       └── 4_FLAIR/
+│       │   └── NIFTI/
+│       │       └── FLAIR.nii.gz
+│       └── 5_MASK/
+│           └── NIFTI/
+│               └── MASK.nii.gz
+│
+├── preprocess.py
+├── gmsh_solver.py
+├── convert_mesh_mul.py
+├── writer.py
+└── requirements.txt
+
+The Python scripts must determine PROJECT_DIR using:
+
+```
+Path(__file__).resolve().parent
+```
+
+Do not hard-code /workspace paths.
+
+The dataset directory is:
+
+```
+PROJECT_DIR / "EGD-0001" / "MR_EGD-0001"
+```
+
+============================================================
+2. PRIMARY GOAL
+===============
+
+Generate a nested 5-material computational head model:
+
+```
+Region 1 = BrainTissue
+Region 2 = Tumor
+Region 3 = CSF
+Region 4 = Skull
+Region 5 = Scalp
+```
+
+The intended hierarchy is:
+
+```
+Scalp
+  └── Skull
+       └── CSF
+            └── BrainTissue
+                 └── Tumor
+```
+
+Tumor is embedded inside the brain domain.
+
+All volume regions must be mutually exclusive.
+
+The final mesh must be conforming: adjacent materials must share identical interface nodes/faces.
+
+============================================================
+3. ABSOLUTE DATA-INTEGRITY REQUIREMENTS
+=======================================
+
+These requirements are mandatory.
+
+The original files:
+
+```
+T1.nii.gz
+T1GD.nii.gz
+T2.nii.gz
+FLAIR.nii.gz
+MASK.nii.gz
+```
+
+are READ-ONLY.
+
+Never overwrite them.
+
+The original tumor mask is authoritative.
+
+Define tumor as:
+
+```
+tumor_mask = MASK > 0
+```
+
+Never:
+
+* erode tumor
+* dilate tumor
+* smooth tumor
+* close tumor
+* open tumor
+* fill tumor holes
+* remove tumor components
+* resample tumor unless absolutely required by mismatched geometry
+* add tumor voxels
+* delete tumor voxels
+
+All final tumor validation must prove:
+
+```
+original tumor voxel count == derived tumor voxel count
+```
+
+and:
+
+```
+differing tumor voxels == 0
+```
+
+For this dataset the expected original tumor voxel count is currently:
+
+```
+82,652
+```
+
+Do not hard-code that as a requirement for other datasets, but report it and validate exact equality against the loaded original mask.
+
+============================================================
+4. INPUT GEOMETRY VALIDATION
+============================
+
+preprocess.py must load all five NIfTI files using nibabel.
+
+Verify:
+
+* all are 3-D
+* all shapes are identical
+* all affines are equal within a small numerical tolerance
+* voxel spacing is valid
+* voxel volume is calculated from the affine determinant
+
+For the current dataset the expected shape is approximately:
+
+```
+(197, 233, 189)
+```
+
+and spacing is:
+
+```
+1.0 x 1.0 x 1.0 mm
+```
+
+but derive these values from the files rather than hard-coding them.
+
+Print detailed diagnostics.
+
+============================================================
+5. preprocess.py
+================
+
+Create a complete preprocess.py.
+
+Its responsibilities are:
+
+1. Load MRI and tumor segmentation.
+2. Validate geometry.
+3. Preserve the tumor exactly.
+4. Estimate an outer MRI-derived head mask.
+5. Derive an interior brain envelope.
+6. Ensure the complete exact tumor fits inside that brain envelope.
+7. Construct CSF, Skull and Scalp computational shells.
+8. Build mutually exclusive material labels.
+9. Pad the computational domain without changing physical/world coordinates.
+10. Validate topology and interfaces.
+11. Write masks and preprocess_report.json.
+
+---
+
+## 5.1 MRI normalization
+
+Robustly normalize each MRI sequence independently.
+
+A reasonable method is:
+
+* use finite positive voxels
+* compute 1st and 99th percentiles
+* scale to [0,1]
+* clip outside [0,1]
+
+Then calculate:
+
+```
+combined = average(T1, T1GD, T2, FLAIR)
+```
+
+---
+
+## 5.2 Outer head estimation
+
+Estimate the outer head from the combined MRI.
+
+Use Otsu thresholding on positive combined MRI voxels.
+
+A conservative outer-head threshold may use:
+
+```
+head_threshold = otsu_threshold * 0.50
+```
+
+Then:
+
+* threshold
+* small binary closing
+* fill internal holes
+* remove small disconnected components
+* keep largest connected component
+
+The final head should represent an outer computational head envelope, not brain tissue.
+
+Print:
+
+* positive MRI voxels
+* Otsu threshold
+* head threshold
+* raw head voxel count
+* final head voxel count
+* voxel bounding box
+* world bounding box
+
+---
+
+## 5.3 Shell thicknesses
+
+Use computational shell thicknesses:
+
+```
+CSF   = 2.0 mm
+Skull = 3.0 mm
+Scalp = 4.0 mm
+```
+
+For the current 1-mm isotropic dataset this corresponds to:
+
+```
+CSF   = 2 voxels
+Skull = 3 voxels
+Scalp = 4 voxels
+```
+
+Total nominal shell thickness:
+
+```
+9 voxels
+```
+
+Extra computational margin:
+
+```
+2 voxels
+```
+
+Derive voxel counts from spacing rather than hard-coding 1 mm.
+
+For now use 6-connected voxel morphology unless a physically sampled distance-transform implementation is clearly superior.
+
+---
+
+## 5.4 Brain envelope and exact tumor containment
+
+Do NOT estimate brain using an arbitrary intensity percentile inside the head.
+
+Instead derive the brain envelope geometrically from the outer head.
+
+Start by eroding the MRI head by the total nominal shell thickness.
+
+For example:
+
+```
+nominal_erosion = csf_voxels + skull_voxels + scalp_voxels
+```
+
+However, the complete exact tumor must remain inside the brain envelope.
+
+Therefore perform an automatic safe-erosion search.
+
+Test:
+
+```
+nominal_erosion
+nominal_erosion - 1
+nominal_erosion - 2
+...
+0
+```
+
+Choose the largest erosion for which:
+
+```
+tumor_mask & ~brain_envelope
+```
+
+has zero voxels.
+
+Print every tested erosion:
+
+```
+erosion = N
+brain-envelope voxel count
+tumor voxels outside
+```
+
+If even the un-eroded MRI head does not contain the tumor, FAIL loudly because that indicates an input/head-estimation problem.
+
+Do not repair the tumor.
+
+Do not simply modify tumor to fit the brain.
+
+The selected brain envelope must contain all tumor voxels.
+
+---
+
+## 5.5 Construct the five mutually exclusive regions
+
+Use:
+
+```
+BrainTissue = BrainEnvelope AND NOT Tumor
+```
+
+Then:
+
+```
+csf_outer = dilate(BrainEnvelope, csf_voxels)
+CSF = csf_outer AND NOT BrainEnvelope
+```
+
+Then:
+
+```
+skull_outer = dilate(csf_outer, skull_voxels)
+Skull = skull_outer AND NOT csf_outer
+```
+
+Then:
+
+```
+scalp_outer = dilate(skull_outer, scalp_voxels)
+Scalp = scalp_outer AND NOT skull_outer
+```
+
+Ensure strict mutual exclusivity explicitly.
+
+Material IDs:
+
+```
+0 = Background
+1 = BrainTissue
+2 = Tumor
+3 = CSF
+4 = Skull
+5 = Scalp
+```
+
+Generate material_labels.
+
+---
+
+## 5.6 Validate expected interfaces
+
+Expected non-background material interfaces are ONLY:
+
+```
+BrainTissue <-> Tumor
+BrainTissue <-> CSF
+CSF <-> Skull
+Skull <-> Scalp
+```
+
+Unexpected direct interfaces such as:
+
+```
+Tumor <-> CSF
+Tumor <-> Skull
+Brain <-> Skull
+CSF <-> Scalp
+```
+
+must be reported as errors or strong warnings depending on severity.
+
+Calculate voxel-face contact counts in x, y and z directions.
+
+---
+
+## 5.7 Exterior condition
+
+Only Scalp should be the outer physical material.
+
+After computational padding, the actual array boundary should preferably be Background because of the added margin.
+
+Before padding, verify no Brain/Tumor/CSF/Skull improperly reaches the outer physical head boundary.
+
+Report all materials that touch the computational boundary.
+
+---
+
+## 5.8 Padding
+
+Pad the derived computational masks.
+
+Use:
+
+```
+margin = total nominal shell voxels + 2
+```
+
+or another explicitly documented safe margin.
+
+When padding NIfTI arrays, shift the affine so original physical coordinates remain unchanged.
+
+If left padding is:
+
+```
+p = [px, py, pz]
+```
+
+then update the affine translation consistently using the original affine basis.
+
+Verify that tumor world-space bounding box is identical before and after padding.
+
+---
+
+## 5.9 preprocess.py outputs
+
+Write:
+
+EGD-0001/MR_EGD-0001/preprocess/masks/
+
+```
+brain_mask.nii.gz
+tumor_mask.nii.gz
+csf_mask.nii.gz
+skull_mask.nii.gz
+scalp_mask.nii.gz
+head_mask.nii.gz
+brain_envelope_mask.nii.gz
+material_labels.nii.gz
+material_labels_original.nii.gz
+```
+
+Also write:
+
+```
+preprocess_report.json
+```
+
+The report should include:
+
+* input paths
+* shape
+* affine
+* spacing
+* voxel volume
+* tumor count
+* tumor bbox
+* head diagnostics
+* shell thicknesses
+* erosion-search history
+* selected safe erosion
+* material counts
+* volumes in mm3 and mL
+* voxel bboxes
+* world bboxes
+* world centroids
+* pairwise overlap validation
+* tumor exactness
+* interface counts
+* unexpected interfaces
+* exterior validation
+* padding information
+* generated filenames
+
+============================================================
+6. gmsh_solver.py
+=================
+
+Create a complete gmsh_solver.py.
+
+Its purpose is to convert material_labels.nii.gz into a conforming voxel FEM mesh.
+
+Do NOT independently mesh each material.
+
+A single conforming mesh must be generated from the common labeled voxel grid.
+
+Preferred element types:
+
+```
+HEX8 volume elements
+QUAD4 material-interface elements
+```
+
+This is a structured voxel mesh, so each labeled voxel corresponds to one HEX8 element.
+
+Do not use marching cubes for the actual volume discretization.
+
+Marching cubes may be used only for optional visualization diagnostics, not for the FEM connectivity.
+
+---
+
+## 6.1 Mesh construction
+
+Load:
+
+```
+preprocess/masks/material_labels.nii.gz
+```
+
+For every nonzero voxel:
+
+* create the eight physical corner coordinates using the NIfTI affine
+* share node IDs between neighboring voxels
+* create one HEX8 element
+* assign its PhysicalID/MaterialID from the voxel material label
+
+Avoid creating duplicate nodes for adjacent voxels.
+
+Use a deterministic node-index map based on voxel-grid corners.
+
+The resulting mesh must be conforming automatically.
+
+---
+
+## 6.2 Gmsh physical volume tags
+
+Use exactly:
+
+```
+1 = BrainTissue
+2 = Tumor
+3 = CSF
+4 = Skull
+5 = Scalp
+```
+
+Physical names:
+
+```
+"BrainTissue"
+"Tumor"
+"CSF"
+"Skull"
+"Scalp"
+```
+
+---
+
+## 6.3 Interface tags
+
+Create QUAD4 interface elements by scanning neighboring voxel pairs.
+
+Create a face only when two adjacent voxels have different relevant material IDs.
+
+Physical surface tags:
+
+```
+101 = TumorInterface
+102 = BrainCSFInterface
+103 = CSFSkullInterface
+104 = SkullScalpInterface
+105 = ScalpExterior
+```
+
+Definitions:
+
+```
+101: BrainTissue/Tumor
+102: BrainTissue/CSF
+103: CSF/Skull
+104: Skull/Scalp
+105: outer Scalp/Background interface
+```
+
+Each internal material interface face must appear once, not twice.
+
+Face node ordering should be consistent.
+
+---
+
+## 6.4 Gmsh output
+
+Write:
+
+EGD-0001/MR_EGD-0001/results/head_tumor_multiregion_mesh/
+
+```
+head_tumor_5region.msh
+region_tags.json
+mesh_report.json
+```
+
+Use a Gmsh format that meshio can reliably read.
+
+Prefer MSH 4.1 or 2.2 depending on implementation reliability, but preserve physical tags and names correctly.
+
+If using Gmsh Python API, initialize/finalize safely.
+
+If directly writing the .msh format is more robust for a structured voxel grid, that is acceptable, provided it is standards-compliant and verified by meshio.
+
+---
+
+## 6.5 Mesh validation
+
+Validate:
+
+* no invalid connectivity indices
+* all element node IDs exist
+* all HEX8 elements have exactly 8 distinct nodes
+* all QUAD4 elements have exactly 4 distinct nodes
+* no zero-volume voxels
+* expected physical tags exist
+* only volume tags 1..5
+* only interface tags 101..105
+* no untagged HEX8 cells
+* no untagged QUAD4 cells
+* region HEX8 counts equal preprocessing voxel counts
+* total HEX8 count equals total nonzero material voxel count
+* tumor HEX8 count equals exact original tumor voxel count
+* internal interface counts agree with preprocessing diagnostics when definitions are equivalent
+
+Report progress because the mesh can contain millions of cells.
+
+Do not print one line per voxel.
+
+Use periodic progress messages.
+
+============================================================
+7. convert_mesh_mul.py
+======================
+
+Create a complete convert_mesh_mul.py.
+
+Read:
+
+```
+head_tumor_5region.msh
+```
+
+READ-ONLY.
+
+Use meshio.
+
+Extract the five volume materials by physical tag.
+
+Write one compact VTU per region:
+
+```
+BrainTissue.vtu
+Tumor.vtu
+CSF.vtu
+Skull.vtu
+Scalp.vtu
+```
+
+Also write:
+
+```
+Interfaces.vtu
+```
+
+and:
+
+```
+head_tumor_5region.vtm
+```
+
+under:
+
+EGD-0001/MR_EGD-0001/results/head_tumor_multiregion_mesh/multiblock/
+
+---
+
+## 7.1 Critical point-compaction requirement
+
+Do NOT retain every global mesh point in each region-specific VTU.
+
+For every extracted material:
+
+1. determine all HEX8 cells belonging to that physical tag
+2. find only the node IDs referenced by those cells
+3. compact the point array
+4. build old-node-ID -> new-node-ID mapping
+5. remap connectivity
+6. write only those compact points
+
+Each region VTU must therefore have its own correct regional bounding box.
+
+Connectivity must satisfy:
+
+```
+min index = 0
+max index = number_of_points - 1
+```
+
+and:
+
+```
+unique referenced points == number_of_points
+```
+
+Preserve:
+
+```
+MaterialID
+PhysicalID
+```
+
+as cell data.
+
+For Interfaces.vtu preserve surface/interface PhysicalID values 101..105.
+
+---
+
+## 7.2 Multiblock output
+
+Write a valid VTM referencing:
+
+```
+BrainTissue.vtu
+Tumor.vtu
+CSF.vtu
+Skull.vtu
+Scalp.vtu
+Interfaces.vtu
+```
+
+This must load cleanly in ParaView.
+
+Write:
+
+```
+multiblock_summary.json
+```
+
+with:
+
+* source mesh path
+* global point count
+* source cell-block counts
+* each region cell count
+* compact point count
+* regional bbox
+* PhysicalID range
+* MaterialID range
+* connectivity min/max
+* unique referenced points
+* interface counts
+* conservation checks
+
+============================================================
+8. writer.py
+============
+
+Create a complete writer.py.
+
+It must read:
+
+```
+preprocess_report.json
+region_tags.json
+mesh_report.json
+multiblock_summary.json
+```
+
+where available.
+
+Write a human-readable report:
+
+EGD-0001/MR_EGD-0001/results/mesh_summary.txt
+
+Include:
+
+* dataset
+* image shape
+* voxel spacing
+* tumor exactness
+* tumor voxel count
+* tumor volume
+* brain volume
+* CSF volume
+* skull volume
+* scalp volume
+* selected brain-envelope erosion
+* material labels
+* mesh node count
+* HEX8 count per material
+* total HEX8 count
+* QUAD4 count per interface
+* total interface count
+* region compact VTU point counts
+* bounding boxes
+* validation PASS/FAIL summary
+* generated files
+
+Make the report easy to inspect manually.
+
+============================================================
+9. requirements.txt
+===================
+
+Create a requirements.txt containing at minimum appropriate versions/ranges for:
+
+```
+numpy
+scipy
+nibabel
+scikit-image
+gmsh
+meshio
+```
+
+Optional diagnostic packages can include:
+
+```
+pyvista
+```
+
+Do not require GPU libraries.
+
+Gmsh meshing for this workflow is CPU-based.
+
+============================================================
+10. OPTIONAL verify_pipeline.py
+===============================
+
+Also create a standalone verify_pipeline.py if useful.
+
+It should independently inspect the generated outputs and perform final consistency checks.
+
+Checks should include:
+
+* source tumor == derived tumor exactly
+* material histogram
+* five expected volume IDs
+* five expected interface IDs
+* region mesh cell counts
+* mesh-to-preprocess conservation
+* compact VTU connectivity
+* VTM referenced files exist
+* no missing output files
+
+============================================================
+11. SCRIPT EXECUTION ORDER
+==========================
+
+The intended usage is:
+
+```
+python3 preprocess.py
+python3 gmsh_solver.py
+python3 convert_mesh_mul.py
+python3 writer.py
+```
+
+Optionally:
+
+```
+python3 verify_pipeline.py
+```
+
+Do not make one script silently call all the others unless there is an optional driver script.
+
+Each stage should be independently runnable and restartable.
+
+============================================================
+12. OUTPUT LOGGING
+==================
+
+Use clear section banners such as:
+
+================================================================================
+CHECKING INPUT FILES
+====================
+
+and prefixes:
+
+```
+[preprocess]
+[gmsh_solver]
+[convert_mesh_mul]
+[writer]
+```
+
+Print meaningful progress.
+
+For multi-million-element loops, print occasional progress percentages/counts.
+
+Avoid excessive per-element output.
+
+============================================================
+13. FAILURE POLICY
+==================
+
+Fail early and clearly on invalid data.
+
+Examples:
+
+* missing input file
+* geometry mismatch
+* empty tumor
+* tumor not contained in even un-eroded MRI head
+* unexpected material overlap
+* missing physical tags
+* mesh/material cell-count mismatch
+* tumor count changed
+* invalid connectivity
+* unexpected direct material interface
+
+Never silently repair an important medical segmentation error.
+
+Never silently discard data.
+
+============================================================
+14. PERFORMANCE
+===============
+
+The dataset may generate several million HEX8 elements.
+
+Design for memory efficiency.
+
+Avoid Python dictionaries containing huge heavyweight objects where a NumPy-based indexing strategy is possible.
+
+For structured voxel node numbering, strongly consider deriving node IDs analytically from grid-corner indices rather than storing every node as a Python tuple dictionary.
+
+Vectorize operations where practical.
+
+Do not assume GPU acceleration.
+
+The machine may have many CPU cores and large memory.
+
+Do not require all cores if the relevant library does not use them.
+
+============================================================
+15. SCIENTIFIC REQUIREMENTS
+===========================
+
+The mesh represents a computational model, not anatomical ground truth.
+
+Clearly distinguish:
+
+* original MRI-derived data
+* exact supplied tumor segmentation
+* computationally generated Brain/CSF/Skull/Scalp regions
+
+Do not claim computational shells are true patient-specific tissue segmentations.
+
+Preserve NIfTI world coordinates throughout the workflow.
+
+============================================================
+16. EXPECTED CURRENT-DATA REFERENCE VALUES
+==========================================
+
+Use these only as regression/reference values if the input data produces them; do not force the code to generate them.
+
+Known original tumor:
+
+```
+82,652 voxels
+```
+
+A prior valid voxel mesh from this dataset had approximately:
+
+```
+BrainTissue HEX8: 3,232,538
+Tumor HEX8:          82,652
+CSF HEX8:           375,667
+Skull HEX8:         442,817
+Scalp HEX8:         512,701
+
+Total HEX8:       4,646,375
+```
+
+Previous interface counts were approximately:
+
+```
+TumorInterface:       21,094
+BrainCSFInterface:   359,822
+CSFSkullInterface:   320,894
+SkullScalpInterface: 232,596
+ScalpExterior:       236,202
+
+Total QUAD4:       1,170,608
+```
+
+These came from an earlier pipeline and may change after correcting the brain-envelope construction.
+
+Therefore:
+
+DO NOT manipulate the new implementation merely to reproduce these old numbers.
+
+The authoritative invariants are geometric consistency, exact tumor preservation, mutual exclusivity, conforming connectivity and correct tagging.
+
+============================================================
+17. CODING QUALITY
+==================
+
+Use:
+
+```
+from __future__ import annotations
+```
+
+Use pathlib.
+
+Use descriptive functions.
+
+Use type hints where useful.
+
+Use docstrings.
+
+Keep configuration parameters near the top of each file.
+
+Avoid unexplained magic numbers.
+
+Use JSON reports for machine-readable diagnostics.
+
+Use deterministic behavior.
+
+Make the scripts Linux/Docker friendly.
+
+Do not require a GUI.
+
+============================================================
+18. IMPORTANT DESIGN DECISIONS
+==============================
+
+Do not return to the flawed method:
+
+```
+brain = head_mask & (combined > percentile_inside_head)
+```
+
+because that previously made BrainTissue resemble the whole head.
+
+BrainEnvelope must instead be derived geometrically from the outer head.
+
+Do not independently surface-mesh all tissue masks and then try to merge them.
+
+The main FEM discretization should come directly from the common labeled voxel grid so interfaces are conforming by construction.
+
+Do not use marching cubes as the source of HEX8 FEM connectivity.
+
+Do not create separate regional meshes and then attempt to stitch them.
+
+Do not modify the original tumor segmentation to make meshing easier.
+
+============================================================
+19. FIRST TASK
+==============
+
+Before writing code, inspect the existing repository if files already exist.
+
+Then implement or replace the pipeline files as necessary.
+
+You may overwrite generated source files such as:
+
+```
+preprocess.py
+gmsh_solver.py
+convert_mesh_mul.py
+writer.py
+verify_pipeline.py
+requirements.txt
+```
+
+but never overwrite the original MRI/NIfTI input data.
+
+After implementation:
+
+1. syntax-check every Python file
+2. report exactly which files were created or changed
+3. provide the exact commands to run the pipeline
+4. do not claim success for runtime stages that you have not actually executed
+5. if the dataset is available locally, execute preprocessing first and inspect its diagnostics before running the expensive mesh-generation stage
+6. if preprocessing fails, diagnose and correct the algorithm rather than weakening data-integrity checks
+7. after preprocessing succeeds, run mesh generation
+8. validate outputs before proceeding to conversion
+9. convert to compact VTU/VTM
+10. run final report/verification
+
+The final objective is a scientifically defensible, exact-tumor-preserving, nested 5-region, conforming HEX8/QUAD4 FEM head model that can be inspected in ParaView and later consumed by an FEM solver.

@@ -1,0 +1,2877 @@
+{
+  "timestamp_utc": "2026-09-19T21:45:34.897287+00:00",
+  "classification": "AUTHORITATIVE_PATIENT_MESH_GEOMETRICALLY_AND_TOPOLOGICALLY_CERTIFIED",
+  "mesh_certified": true,
+  "meshing_mvp_complete": true,
+  "mesh_read_only": true,
+  "artifacts": {
+    "mesh_path": "EGD-0001/MR_EGD-0001/meshing/phase4b_mesh/head_tumor_5region.msh",
+    "mesh_sha256": "b66dd853c27c465636fd518c6e03b1540d1538681558778f722e6c2e613ddd85",
+    "mesh_bytes": 320808250,
+    "label_path": "EGD-0001/MR_EGD-0001/preprocessing/phase3b_results/material_labels.nii.gz",
+    "label_sha256": "fea9ca999831b5a8eb4a9c3d6cac1dcc9a175fd824bec5f0a9cd79d6b041cb07",
+    "original_tumor_path": "EGD-0001/MR_EGD-0001/5_MASK/NIFTI/MASK.nii.gz",
+    "original_tumor_sha256": "9b18fb47db2ffef5eb245aa0bb1ffe9f5834f33b5dd09ae7b4a8355c6da411f5",
+    "phase3b_report_path": "EGD-0001/MR_EGD-0001/preprocessing/phase3b_results/phase3b_preprocess_report.json",
+    "phase4b_generation_report_path": "EGD-0001/MR_EGD-0001/meshing/phase4b_mesh/phase4b_mesh_generation_report.json"
+  },
+  "reproducibility": {
+    "git_commit": "a37abc9d56559a68ccadc5f61f3327cb4423c83f",
+    "python": "3.10.12 (main, Aug 31 2026, 10:18:17) [GCC 11.4.0]",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "numpy": "1.26.4",
+    "scipy": "1.15.3",
+    "nibabel": "5.4.2",
+    "mesh_reader": "standalone Python MSH 2.2 ASCII parser in this certification tool",
+    "tool_sha256": "7c5fab276cf429cfc8a7ea243630b6b0bd40494b3277d91109be3ce4d7cc4fdc"
+  },
+  "image": {
+    "shape": [
+      219,
+      255,
+      211
+    ],
+    "spacing_mm": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "orientation": [
+      "R",
+      "A",
+      "S"
+    ],
+    "affine": [
+      [
+        1.0,
+        0.0,
+        -0.0,
+        -109.0
+      ],
+      [
+        0.0,
+        1.0,
+        -0.0,
+        -145.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        -83.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "padded_affine": [
+      [
+        1.0,
+        0.0,
+        -0.0,
+        -109.0
+      ],
+      [
+        0.0,
+        1.0,
+        -0.0,
+        -145.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        -83.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "affine_determinant": 1.0,
+    "handedness": "right-handed",
+    "voxel_volume_mm3": 1.0,
+    "padding_each_side": 11,
+    "label_counts": {
+      "0": 8905064,
+      "1": 1968564,
+      "2": 82652,
+      "3": 162698,
+      "4": 280585,
+      "5": 383732
+    },
+    "invalid_values": [],
+    "physical_occupied_bbox_world": {
+      "min": [
+        -83.5,
+        -119.5,
+        -80.5
+      ],
+      "max": [
+        83.5,
+        84.5,
+        92.5
+      ]
+    },
+    "phase3b_original_shape": [
+      197,
+      233,
+      189
+    ],
+    "phase3b_original_affine": [
+      [
+        1.0,
+        0.0,
+        -0.0,
+        -98.0
+      ],
+      [
+        0.0,
+        1.0,
+        -0.0,
+        -134.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        -72.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "phase3b_final_affine": [
+      [
+        1.0,
+        0.0,
+        -0.0,
+        -109.0
+      ],
+      [
+        0.0,
+        1.0,
+        -0.0,
+        -145.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        -83.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "mesh": {
+    "format_version": "2.2",
+    "file_type": "ASCII",
+    "data_size_bytes": 8,
+    "vertices": 2958278,
+    "hex8": 2878231,
+    "quad4": 595988,
+    "hex8_by_attribute": {
+      "1": 1968564,
+      "2": 82652,
+      "3": 162698,
+      "4": 280585,
+      "5": 383732
+    },
+    "quad4_by_attribute": {
+      "101": 21094,
+      "102": 131310,
+      "103": 137498,
+      "104": 147048,
+      "105": 159038
+    },
+    "physical_names": {
+      "3:1": "BrainTissue",
+      "3:2": "Tumor",
+      "3:3": "CSF",
+      "3:4": "Skull",
+      "3:5": "Scalp",
+      "2:101": "TumorInterface",
+      "2:102": "BrainCSFInterface",
+      "2:103": "CSFSkullInterface",
+      "2:104": "SkullScalpInterface",
+      "2:105": "ScalpExterior"
+    },
+    "unexpected_element_types": {},
+    "unexpected_attributes": {
+      "volume": [],
+      "boundary": []
+    },
+    "mesh_bbox_world": {
+      "min": [
+        -83.5,
+        -119.5,
+        -80.5
+      ],
+      "max": [
+        83.5,
+        84.5,
+        92.5
+      ]
+    },
+    "referenced_vertex_count": 2958278,
+    "unused_vertices": 0,
+    "duplicate_hexes": 0,
+    "repeated_node_hexes": 0,
+    "duplicate_coordinate_vertices": 0
+  },
+  "geometry_quality": {
+    "volume": {
+      "min": 1.0,
+      "max": 1.0,
+      "mean": 1.0
+    },
+    "signed_jacobian_center": {
+      "min": 1.0,
+      "max": 1.0,
+      "mean": 1.0
+    },
+    "scaled_jacobian_vertex": {
+      "min": 1.0,
+      "max": 1.0,
+      "mean": 1.0
+    },
+    "edge_length": {
+      "min": 1.0,
+      "max": 1.0,
+      "mean": 1.0
+    },
+    "maximum_aspect_ratio": 1.0,
+    "negative_jacobian_elements": 0,
+    "zero_jacobian_elements": 0,
+    "near_degenerate_elements": 0,
+    "zero_volume_elements": 0,
+    "inverted_elements": 0,
+    "jacobian_convention": "det([dx/dxi, dx/deta, dx/dzeta]) using HEX8 local axes and reference coordinates [0,1]^3; evaluated at center (constant affine voxel map); scaled Jacobian evaluated at all 8 corners"
+  },
+  "face_topology": {
+    "unique_volume_faces": 8714212,
+    "internal_faces": 8555174,
+    "exterior_faces": 159038,
+    "nonmanifold_faces": 0,
+    "zero_owner_faces": 0,
+    "crack_check": "all exported coordinate triples unique; every shared canonical face uses exact shared node IDs; all cross-material/exterior faces matched against QUAD4 keys",
+    "material_adjacency_faces": {
+      "1-2": 21094,
+      "1-3": 131310,
+      "3-4": 137498,
+      "4-5": 147048
+    },
+    "same_material_internal_faces": 8118224,
+    "forbidden_cross_material_faces": 0,
+    "exterior_faces_by_material": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 159038
+    },
+    "quad_orphans": 0,
+    "duplicate_quads": 0,
+    "quad_semantic_errors": 0,
+    "missing_expected_quads": 0,
+    "unexpected_quads": 0
+  },
+  "materials": {
+    "1": {
+      "name": "BrainTissue",
+      "source_voxels": 1968564,
+      "mesh_hexes": 1968564,
+      "count_difference": 0,
+      "source_volume_mm3": 1968564.0,
+      "mesh_volume_mm3": 1968564.0,
+      "volume_abs_difference_mm3": 0.0,
+      "volume_relative_difference": 0.0,
+      "source_centroid_world": [
+        0.3161421218715775,
+        -20.962784547517884,
+        8.145850985794722
+      ],
+      "mesh_centroid_world": [
+        0.3161421218715775,
+        -20.962784547517884,
+        8.145850985794722
+      ],
+      "centroid_discrepancy_mm": 0.0,
+      "source_bbox_world": {
+        "min": [
+          -74.0,
+          -110.0,
+          -71.0
+        ],
+        "max": [
+          74.0,
+          75.0,
+          83.0
+        ]
+      },
+      "mesh_bbox_world": {
+        "min": [
+          -74.5,
+          -110.5,
+          -71.5
+        ],
+        "max": [
+          74.5,
+          75.5,
+          83.5
+        ]
+      }
+    },
+    "2": {
+      "name": "Tumor",
+      "source_voxels": 82652,
+      "mesh_hexes": 82652,
+      "count_difference": 0,
+      "source_volume_mm3": 82652.0,
+      "mesh_volume_mm3": 82652.0,
+      "volume_abs_difference_mm3": 0.0,
+      "volume_relative_difference": 0.0,
+      "source_centroid_world": [
+        -15.100445240284566,
+        -41.84512171514301,
+        44.71453806320476
+      ],
+      "mesh_centroid_world": [
+        -15.100445240284566,
+        -41.84512171514301,
+        44.71453806320476
+      ],
+      "centroid_discrepancy_mm": 0.0,
+      "source_bbox_world": {
+        "min": [
+          -39.0,
+          -90.0,
+          15.0
+        ],
+        "max": [
+          -1.0,
+          1.0,
+          82.0
+        ]
+      },
+      "mesh_bbox_world": {
+        "min": [
+          -39.5,
+          -90.5,
+          14.5
+        ],
+        "max": [
+          -0.5,
+          1.5,
+          82.5
+        ]
+      }
+    },
+    "3": {
+      "name": "CSF",
+      "source_voxels": 162698,
+      "mesh_hexes": 162698,
+      "count_difference": 0,
+      "source_volume_mm3": 162698.0,
+      "mesh_volume_mm3": 162698.0,
+      "volume_abs_difference_mm3": 0.0,
+      "volume_relative_difference": 0.0,
+      "source_centroid_world": [
+        -0.0786241994369937,
+        -20.739160899334966,
+        5.625797489827779
+      ],
+      "mesh_centroid_world": [
+        -0.0786241994369937,
+        -20.739160899334966,
+        5.625797489827779
+      ],
+      "centroid_discrepancy_mm": 0.0,
+      "source_bbox_world": {
+        "min": [
+          -76.0,
+          -112.0,
+          -73.0
+        ],
+        "max": [
+          76.0,
+          77.0,
+          85.0
+        ]
+      },
+      "mesh_bbox_world": {
+        "min": [
+          -76.5,
+          -112.5,
+          -73.5
+        ],
+        "max": [
+          76.5,
+          77.5,
+          85.5
+        ]
+      }
+    },
+    "4": {
+      "name": "Skull",
+      "source_voxels": 280585,
+      "mesh_hexes": 280585,
+      "count_difference": 0,
+      "source_volume_mm3": 280585.0,
+      "mesh_volume_mm3": 280585.0,
+      "volume_abs_difference_mm3": 0.0,
+      "volume_relative_difference": 0.0,
+      "source_centroid_world": [
+        -0.13061639075502968,
+        -20.705301423810965,
+        5.595926368123742
+      ],
+      "mesh_centroid_world": [
+        -0.13061639075502968,
+        -20.705301423810965,
+        5.595926368123742
+      ],
+      "centroid_discrepancy_mm": 0.0,
+      "source_bbox_world": {
+        "min": [
+          -79.0,
+          -115.0,
+          -76.0
+        ],
+        "max": [
+          79.0,
+          80.0,
+          88.0
+        ]
+      },
+      "mesh_bbox_world": {
+        "min": [
+          -79.5,
+          -115.5,
+          -76.5
+        ],
+        "max": [
+          79.5,
+          80.5,
+          88.5
+        ]
+      }
+    },
+    "5": {
+      "name": "Scalp",
+      "source_voxels": 383732,
+      "mesh_hexes": 383732,
+      "count_difference": 0,
+      "source_volume_mm3": 383732.0,
+      "mesh_volume_mm3": 383732.0,
+      "volume_abs_difference_mm3": 0.0,
+      "volume_relative_difference": 0.0,
+      "source_centroid_world": [
+        -0.14639904933651612,
+        -20.685697309580643,
+        5.422941010913867
+      ],
+      "mesh_centroid_world": [
+        -0.14639904933651612,
+        -20.685697309580643,
+        5.422941010913867
+      ],
+      "centroid_discrepancy_mm": 0.0,
+      "source_bbox_world": {
+        "min": [
+          -83.0,
+          -119.0,
+          -80.0
+        ],
+        "max": [
+          83.0,
+          84.0,
+          92.0
+        ]
+      },
+      "mesh_bbox_world": {
+        "min": [
+          -83.5,
+          -119.5,
+          -80.5
+        ],
+        "max": [
+          83.5,
+          84.5,
+          92.5
+        ]
+      }
+    }
+  },
+  "tumor": {
+    "source_voxels": 82652,
+    "mesh_tumor_hexes": 82652,
+    "false_negative": 0,
+    "false_positive": 0,
+    "differing_voxels": 0,
+    "dice": 1.0,
+    "jaccard": 1.0,
+    "source_centroid_world": [
+      -15.100445240284566,
+      -41.84512171514301,
+      44.71453806320476
+    ],
+    "label_centroid_world": [
+      -15.100445240284566,
+      -41.84512171514301,
+      44.71453806320476
+    ],
+    "centroid_difference_mm": 0.0,
+    "source_bbox_index": {
+      "min": [
+        59,
+        44,
+        87
+      ],
+      "max": [
+        97,
+        135,
+        154
+      ]
+    },
+    "label_bbox_index": {
+      "min": [
+        70,
+        55,
+        98
+      ],
+      "max": [
+        108,
+        146,
+        165
+      ]
+    },
+    "exact": true
+  },
+  "tumor_source_vs_label_grid": {
+    "source_voxels": 82652,
+    "label_tumor_voxels": 82652,
+    "missing": 0,
+    "extra": 0
+  },
+  "original_tumor_image": {
+    "shape": [
+      197,
+      233,
+      189
+    ],
+    "spacing_mm": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "orientation": [
+      "R",
+      "A",
+      "S"
+    ],
+    "affine": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -98.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -134.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        -72.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "affine_determinant": 1.0
+  },
+  "background_topology": {
+    "background_components_total": 1,
+    "internal_components": 0,
+    "internal_voxels": 0,
+    "background_boundary_component_sizes": []
+  },
+  "image_components": {
+    "1": {
+      "components": 5,
+      "largest": 1968520,
+      "small_component_sizes": [
+        1,
+        4,
+        15,
+        24
+      ]
+    },
+    "2": {
+      "components": 1,
+      "largest": 82652,
+      "small_component_sizes": []
+    },
+    "3": {
+      "components": 1,
+      "largest": 162698,
+      "small_component_sizes": []
+    },
+    "4": {
+      "components": 1,
+      "largest": 280585,
+      "small_component_sizes": []
+    },
+    "5": {
+      "components": 3,
+      "largest": 383729,
+      "small_component_sizes": [
+        1,
+        2
+      ]
+    }
+  },
+  "mesh_components": {
+    "all": {
+      "components": 1,
+      "largest": 2878231
+    },
+    "1": {
+      "components": 5,
+      "largest": 1968520,
+      "small_component_sizes": [
+        1,
+        4,
+        15,
+        24
+      ]
+    },
+    "2": {
+      "components": 1,
+      "largest": 82652,
+      "small_component_sizes": []
+    },
+    "3": {
+      "components": 1,
+      "largest": 162698,
+      "small_component_sizes": []
+    },
+    "4": {
+      "components": 1,
+      "largest": 280585,
+      "small_component_sizes": []
+    },
+    "5": {
+      "components": 3,
+      "largest": 383729,
+      "small_component_sizes": [
+        1,
+        2
+      ]
+    }
+  },
+  "interfaces": {
+    "area_and_normals": {
+      "101": {
+        "count": 21094,
+        "area_mm2": 21094.0,
+        "min_area_mm2": 1.0,
+        "max_area_mm2": 1.0,
+        "mean_area_mm2": 1.0,
+        "normal_axis_counts_abs": {
+          "x": 9148,
+          "y": 5422,
+          "z": 6524
+        }
+      },
+      "102": {
+        "count": 131310,
+        "area_mm2": 131310.0,
+        "min_area_mm2": 1.0,
+        "max_area_mm2": 1.0,
+        "mean_area_mm2": 1.0,
+        "normal_axis_counts_abs": {
+          "x": 46726,
+          "y": 41024,
+          "z": 43560
+        }
+      },
+      "103": {
+        "count": 137498,
+        "area_mm2": 137498.0,
+        "min_area_mm2": 1.0,
+        "max_area_mm2": 1.0,
+        "mean_area_mm2": 1.0,
+        "normal_axis_counts_abs": {
+          "x": 48838,
+          "y": 43016,
+          "z": 45644
+        }
+      },
+      "104": {
+        "count": 147048,
+        "area_mm2": 147048.0,
+        "min_area_mm2": 1.0,
+        "max_area_mm2": 1.0,
+        "mean_area_mm2": 1.0,
+        "normal_axis_counts_abs": {
+          "x": 52088,
+          "y": 46136,
+          "z": 48824
+        }
+      },
+      "105": {
+        "count": 159038,
+        "area_mm2": 159038.0,
+        "min_area_mm2": 1.0,
+        "max_area_mm2": 1.0,
+        "mean_area_mm2": 1.0,
+        "normal_axis_counts_abs": {
+          "x": 56020,
+          "y": 49940,
+          "z": 53078
+        }
+      }
+    },
+    "surface_components": {
+      "101": {
+        "components": 1,
+        "largest_faces": 21094,
+        "normal_directions_from_serialized_winding": {
+          "x-1": 4574,
+          "x+1": 4574,
+          "y-1": 2711,
+          "y+1": 2711,
+          "z-1": 3262,
+          "z+1": 3262
+        },
+        "bbox_world": {
+          "min": [
+            -39.5,
+            -90.5,
+            14.5
+          ],
+          "max": [
+            -0.5,
+            1.5,
+            82.5
+          ]
+        }
+      },
+      "102": {
+        "components": 1,
+        "largest_faces": 131310,
+        "normal_directions_from_serialized_winding": {
+          "x-1": 23363,
+          "x+1": 23363,
+          "y-1": 20512,
+          "y+1": 20512,
+          "z-1": 21780,
+          "z+1": 21780
+        },
+        "bbox_world": {
+          "min": [
+            -74.5,
+            -110.5,
+            -71.5
+          ],
+          "max": [
+            74.5,
+            75.5,
+            83.5
+          ]
+        }
+      },
+      "103": {
+        "components": 1,
+        "largest_faces": 137498,
+        "normal_directions_from_serialized_winding": {
+          "x-1": 24419,
+          "x+1": 24419,
+          "y-1": 21508,
+          "y+1": 21508,
+          "z-1": 22822,
+          "z+1": 22822
+        },
+        "bbox_world": {
+          "min": [
+            -76.5,
+            -112.5,
+            -73.5
+          ],
+          "max": [
+            76.5,
+            77.5,
+            85.5
+          ]
+        }
+      },
+      "104": {
+        "components": 1,
+        "largest_faces": 147048,
+        "normal_directions_from_serialized_winding": {
+          "x-1": 26044,
+          "x+1": 26044,
+          "y-1": 23068,
+          "y+1": 23068,
+          "z-1": 24412,
+          "z+1": 24412
+        },
+        "bbox_world": {
+          "min": [
+            -79.5,
+            -115.5,
+            -76.5
+          ],
+          "max": [
+            79.5,
+            80.5,
+            88.5
+          ]
+        }
+      },
+      "105": {
+        "components": 1,
+        "largest_faces": 159038,
+        "normal_directions_from_serialized_winding": {
+          "x-1": 28010,
+          "x+1": 28010,
+          "y-1": 24970,
+          "y+1": 24970,
+          "z-1": 26539,
+          "z+1": 26539
+        },
+        "bbox_world": {
+          "min": [
+            -83.5,
+            -119.5,
+            -80.5
+          ],
+          "max": [
+            83.5,
+            84.5,
+            92.5
+          ]
+        }
+      }
+    },
+    "invalid_quads": 0
+  },
+  "image_mesh_reconstruction": {
+    "voxels_compared": 11783295,
+    "occupied_source_voxels": 2878231,
+    "occupied_reconstructed_voxels": 2878231,
+    "different_voxels": 0,
+    "confusion_matrix_rows_source_0_to_5_cols_mesh_0_to_5": [
+      [
+        8905064,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1968564,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        82652,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        162698,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        280585,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        383732
+      ]
+    ],
+    "per_material_dice_jaccard": {
+      "1": {
+        "dice": 1.0,
+        "jaccard": 1.0
+      },
+      "2": {
+        "dice": 1.0,
+        "jaccard": 1.0
+      },
+      "3": {
+        "dice": 1.0,
+        "jaccard": 1.0
+      },
+      "4": {
+        "dice": 1.0,
+        "jaccard": 1.0
+      },
+      "5": {
+        "dice": 1.0,
+        "jaccard": 1.0
+      }
+    },
+    "mesh_material_mapping_disagreements": 0,
+    "duplicate_voxel_mappings": 0,
+    "max_inverse_affine_integer_residual": 0.0,
+    "max_node_corner_coordinate_discrepancy_mm": 0.0,
+    "landmarks": [
+      {
+        "voxel_index": [
+          26,
+          101,
+          81
+        ],
+        "physical_center": [
+          -83.0,
+          -44.0,
+          -2.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 5,
+        "mesh_element_index_zero_based": 0,
+        "mesh_node_ids_zero_based": [
+          0,
+          509,
+          529,
+          9,
+          1,
+          510,
+          530,
+          10
+        ],
+        "expected_physical_corners": [
+          [
+            -83.5,
+            -44.5,
+            -2.5
+          ],
+          [
+            -82.5,
+            -44.5,
+            -2.5
+          ],
+          [
+            -82.5,
+            -43.5,
+            -2.5
+          ],
+          [
+            -83.5,
+            -43.5,
+            -2.5
+          ],
+          [
+            -83.5,
+            -44.5,
+            -1.5
+          ],
+          [
+            -82.5,
+            -44.5,
+            -1.5
+          ],
+          [
+            -82.5,
+            -43.5,
+            -1.5
+          ],
+          [
+            -83.5,
+            -43.5,
+            -1.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            -83.5,
+            -44.5,
+            -2.5
+          ],
+          [
+            -82.5,
+            -44.5,
+            -2.5
+          ],
+          [
+            -82.5,
+            -43.5,
+            -2.5
+          ],
+          [
+            -83.5,
+            -43.5,
+            -2.5
+          ],
+          [
+            -83.5,
+            -44.5,
+            -1.5
+          ],
+          [
+            -82.5,
+            -44.5,
+            -1.5
+          ],
+          [
+            -82.5,
+            -43.5,
+            -1.5
+          ],
+          [
+            -83.5,
+            -43.5,
+            -1.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          50,
+          182,
+          99
+        ],
+        "physical_center": [
+          -59.0,
+          37.0,
+          16.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 3,
+        "mesh_element_index_zero_based": 179889,
+        "mesh_node_ids_zero_based": [
+          184708,
+          198977,
+          199041,
+          184767,
+          184709,
+          198978,
+          199042,
+          184768
+        ],
+        "expected_physical_corners": [
+          [
+            -59.5,
+            36.5,
+            15.5
+          ],
+          [
+            -58.5,
+            36.5,
+            15.5
+          ],
+          [
+            -58.5,
+            37.5,
+            15.5
+          ],
+          [
+            -59.5,
+            37.5,
+            15.5
+          ],
+          [
+            -59.5,
+            36.5,
+            16.5
+          ],
+          [
+            -58.5,
+            36.5,
+            16.5
+          ],
+          [
+            -58.5,
+            37.5,
+            16.5
+          ],
+          [
+            -59.5,
+            37.5,
+            16.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            -59.5,
+            36.5,
+            15.5
+          ],
+          [
+            -58.5,
+            36.5,
+            15.5
+          ],
+          [
+            -58.5,
+            37.5,
+            15.5
+          ],
+          [
+            -59.5,
+            37.5,
+            15.5
+          ],
+          [
+            -59.5,
+            36.5,
+            16.5
+          ],
+          [
+            -58.5,
+            36.5,
+            16.5
+          ],
+          [
+            -58.5,
+            37.5,
+            16.5
+          ],
+          [
+            -59.5,
+            37.5,
+            16.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          61,
+          209,
+          66
+        ],
+        "physical_center": [
+          -48.0,
+          64.0,
+          -17.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 5,
+        "mesh_element_index_zero_based": 359778,
+        "mesh_node_ids_zero_based": [
+          368080,
+          386999,
+          387043,
+          368121,
+          368081,
+          387000,
+          387044,
+          368122
+        ],
+        "expected_physical_corners": [
+          [
+            -48.5,
+            63.5,
+            -17.5
+          ],
+          [
+            -47.5,
+            63.5,
+            -17.5
+          ],
+          [
+            -47.5,
+            64.5,
+            -17.5
+          ],
+          [
+            -48.5,
+            64.5,
+            -17.5
+          ],
+          [
+            -48.5,
+            63.5,
+            -16.5
+          ],
+          [
+            -47.5,
+            63.5,
+            -16.5
+          ],
+          [
+            -47.5,
+            64.5,
+            -16.5
+          ],
+          [
+            -48.5,
+            64.5,
+            -16.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            -48.5,
+            63.5,
+            -17.5
+          ],
+          [
+            -47.5,
+            63.5,
+            -17.5
+          ],
+          [
+            -47.5,
+            64.5,
+            -17.5
+          ],
+          [
+            -48.5,
+            64.5,
+            -17.5
+          ],
+          [
+            -48.5,
+            63.5,
+            -16.5
+          ],
+          [
+            -47.5,
+            63.5,
+            -16.5
+          ],
+          [
+            -47.5,
+            64.5,
+            -16.5
+          ],
+          [
+            -48.5,
+            64.5,
+            -16.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          71,
+          50,
+          90
+        ],
+        "physical_center": [
+          -38.0,
+          -95.0,
+          7.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 1,
+        "mesh_element_index_zero_based": 539668,
+        "mesh_node_ids_zero_based": [
+          551165,
+          572907,
+          573001,
+          551257,
+          551166,
+          572908,
+          573002,
+          551258
+        ],
+        "expected_physical_corners": [
+          [
+            -38.5,
+            -95.5,
+            6.5
+          ],
+          [
+            -37.5,
+            -95.5,
+            6.5
+          ],
+          [
+            -37.5,
+            -94.5,
+            6.5
+          ],
+          [
+            -38.5,
+            -94.5,
+            6.5
+          ],
+          [
+            -38.5,
+            -95.5,
+            7.5
+          ],
+          [
+            -37.5,
+            -95.5,
+            7.5
+          ],
+          [
+            -37.5,
+            -94.5,
+            7.5
+          ],
+          [
+            -38.5,
+            -94.5,
+            7.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            -38.5,
+            -95.5,
+            6.5
+          ],
+          [
+            -37.5,
+            -95.5,
+            6.5
+          ],
+          [
+            -37.5,
+            -94.5,
+            6.5
+          ],
+          [
+            -38.5,
+            -94.5,
+            6.5
+          ],
+          [
+            -38.5,
+            -95.5,
+            7.5
+          ],
+          [
+            -37.5,
+            -95.5,
+            7.5
+          ],
+          [
+            -37.5,
+            -94.5,
+            7.5
+          ],
+          [
+            -38.5,
+            -94.5,
+            7.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          79,
+          73,
+          59
+        ],
+        "physical_center": [
+          -30.0,
+          -72.0,
+          -24.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 1,
+        "mesh_element_index_zero_based": 719557,
+        "mesh_node_ids_zero_based": [
+          734018,
+          757313,
+          757465,
+          734170,
+          734019,
+          757314,
+          757466,
+          734171
+        ],
+        "expected_physical_corners": [
+          [
+            -30.5,
+            -72.5,
+            -24.5
+          ],
+          [
+            -29.5,
+            -72.5,
+            -24.5
+          ],
+          [
+            -29.5,
+            -71.5,
+            -24.5
+          ],
+          [
+            -30.5,
+            -71.5,
+            -24.5
+          ],
+          [
+            -30.5,
+            -72.5,
+            -23.5
+          ],
+          [
+            -29.5,
+            -72.5,
+            -23.5
+          ],
+          [
+            -29.5,
+            -71.5,
+            -23.5
+          ],
+          [
+            -30.5,
+            -71.5,
+            -23.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            -30.5,
+            -72.5,
+            -24.5
+          ],
+          [
+            -29.5,
+            -72.5,
+            -24.5
+          ],
+          [
+            -29.5,
+            -71.5,
+            -24.5
+          ],
+          [
+            -30.5,
+            -71.5,
+            -24.5
+          ],
+          [
+            -30.5,
+            -72.5,
+            -23.5
+          ],
+          [
+            -29.5,
+            -72.5,
+            -23.5
+          ],
+          [
+            -29.5,
+            -71.5,
+            -23.5
+          ],
+          [
+            -30.5,
+            -71.5,
+            -23.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          86,
+          192,
+          71
+        ],
+        "physical_center": [
+          -23.0,
+          47.0,
+          -12.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 1,
+        "mesh_element_index_zero_based": 899446,
+        "mesh_node_ids_zero_based": [
+          916883,
+          941089,
+          941188,
+          916981,
+          916884,
+          941090,
+          941189,
+          916982
+        ],
+        "expected_physical_corners": [
+          [
+            -23.5,
+            46.5,
+            -12.5
+          ],
+          [
+            -22.5,
+            46.5,
+            -12.5
+          ],
+          [
+            -22.5,
+            47.5,
+            -12.5
+          ],
+          [
+            -23.5,
+            47.5,
+            -12.5
+          ],
+          [
+            -23.5,
+            46.5,
+            -11.5
+          ],
+          [
+            -22.5,
+            46.5,
+            -11.5
+          ],
+          [
+            -22.5,
+            47.5,
+            -11.5
+          ],
+          [
+            -23.5,
+            47.5,
+            -11.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            -23.5,
+            46.5,
+            -12.5
+          ],
+          [
+            -22.5,
+            46.5,
+            -12.5
+          ],
+          [
+            -22.5,
+            47.5,
+            -12.5
+          ],
+          [
+            -23.5,
+            47.5,
+            -12.5
+          ],
+          [
+            -23.5,
+            46.5,
+            -11.5
+          ],
+          [
+            -22.5,
+            46.5,
+            -11.5
+          ],
+          [
+            -22.5,
+            47.5,
+            -11.5
+          ],
+          [
+            -23.5,
+            47.5,
+            -11.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          94,
+          96,
+          103
+        ],
+        "physical_center": [
+          -15.0,
+          -49.0,
+          20.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 1,
+        "mesh_element_index_zero_based": 1079336,
+        "mesh_node_ids_zero_based": [
+          1099890,
+          1124712,
+          1124879,
+          1100056,
+          1099891,
+          1124713,
+          1124880,
+          1100057
+        ],
+        "expected_physical_corners": [
+          [
+            -15.5,
+            -49.5,
+            19.5
+          ],
+          [
+            -14.5,
+            -49.5,
+            19.5
+          ],
+          [
+            -14.5,
+            -48.5,
+            19.5
+          ],
+          [
+            -15.5,
+            -48.5,
+            19.5
+          ],
+          [
+            -15.5,
+            -49.5,
+            20.5
+          ],
+          [
+            -14.5,
+            -49.5,
+            20.5
+          ],
+          [
+            -14.5,
+            -48.5,
+            20.5
+          ],
+          [
+            -15.5,
+            -48.5,
+            20.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            -15.5,
+            -49.5,
+            19.5
+          ],
+          [
+            -14.5,
+            -49.5,
+            19.5
+          ],
+          [
+            -14.5,
+            -48.5,
+            19.5
+          ],
+          [
+            -15.5,
+            -48.5,
+            19.5
+          ],
+          [
+            -15.5,
+            -49.5,
+            20.5
+          ],
+          [
+            -14.5,
+            -49.5,
+            20.5
+          ],
+          [
+            -14.5,
+            -48.5,
+            20.5
+          ],
+          [
+            -15.5,
+            -48.5,
+            20.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          101,
+          158,
+          58
+        ],
+        "physical_center": [
+          -8.0,
+          13.0,
+          -25.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 1,
+        "mesh_element_index_zero_based": 1259225,
+        "mesh_node_ids_zero_based": [
+          1283097,
+          1307840,
+          1307965,
+          1283225,
+          1283098,
+          1307841,
+          1307966,
+          1283226
+        ],
+        "expected_physical_corners": [
+          [
+            -8.5,
+            12.5,
+            -25.5
+          ],
+          [
+            -7.5,
+            12.5,
+            -25.5
+          ],
+          [
+            -7.5,
+            13.5,
+            -25.5
+          ],
+          [
+            -8.5,
+            13.5,
+            -25.5
+          ],
+          [
+            -8.5,
+            12.5,
+            -24.5
+          ],
+          [
+            -7.5,
+            12.5,
+            -24.5
+          ],
+          [
+            -7.5,
+            13.5,
+            -24.5
+          ],
+          [
+            -8.5,
+            13.5,
+            -24.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            -8.5,
+            12.5,
+            -25.5
+          ],
+          [
+            -7.5,
+            12.5,
+            -25.5
+          ],
+          [
+            -7.5,
+            13.5,
+            -25.5
+          ],
+          [
+            -8.5,
+            13.5,
+            -25.5
+          ],
+          [
+            -8.5,
+            12.5,
+            -24.5
+          ],
+          [
+            -7.5,
+            12.5,
+            -24.5
+          ],
+          [
+            -7.5,
+            13.5,
+            -24.5
+          ],
+          [
+            -8.5,
+            13.5,
+            -24.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          109,
+          87,
+          163
+        ],
+        "physical_center": [
+          0.0,
+          -58.0,
+          80.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 4,
+        "mesh_element_index_zero_based": 1439115,
+        "mesh_node_ids_zero_based": [
+          1467177,
+          1490838,
+          1491000,
+          1467339,
+          1467178,
+          1490839,
+          1491001,
+          1467340
+        ],
+        "expected_physical_corners": [
+          [
+            -0.5,
+            -58.5,
+            79.5
+          ],
+          [
+            0.5,
+            -58.5,
+            79.5
+          ],
+          [
+            0.5,
+            -57.5,
+            79.5
+          ],
+          [
+            -0.5,
+            -57.5,
+            79.5
+          ],
+          [
+            -0.5,
+            -58.5,
+            80.5
+          ],
+          [
+            0.5,
+            -58.5,
+            80.5
+          ],
+          [
+            0.5,
+            -57.5,
+            80.5
+          ],
+          [
+            -0.5,
+            -57.5,
+            80.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            -0.5,
+            -58.5,
+            79.5
+          ],
+          [
+            0.5,
+            -58.5,
+            79.5
+          ],
+          [
+            0.5,
+            -57.5,
+            79.5
+          ],
+          [
+            -0.5,
+            -57.5,
+            79.5
+          ],
+          [
+            -0.5,
+            -58.5,
+            80.5
+          ],
+          [
+            0.5,
+            -58.5,
+            80.5
+          ],
+          [
+            0.5,
+            -57.5,
+            80.5
+          ],
+          [
+            -0.5,
+            -57.5,
+            80.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          116,
+          197,
+          80
+        ],
+        "physical_center": [
+          7.0,
+          52.0,
+          -3.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 1,
+        "mesh_element_index_zero_based": 1619004,
+        "mesh_node_ids_zero_based": [
+          1650110,
+          1674605,
+          1674711,
+          1650216,
+          1650111,
+          1674606,
+          1674712,
+          1650217
+        ],
+        "expected_physical_corners": [
+          [
+            6.5,
+            51.5,
+            -3.5
+          ],
+          [
+            7.5,
+            51.5,
+            -3.5
+          ],
+          [
+            7.5,
+            52.5,
+            -3.5
+          ],
+          [
+            6.5,
+            52.5,
+            -3.5
+          ],
+          [
+            6.5,
+            51.5,
+            -2.5
+          ],
+          [
+            7.5,
+            51.5,
+            -2.5
+          ],
+          [
+            7.5,
+            52.5,
+            -2.5
+          ],
+          [
+            6.5,
+            52.5,
+            -2.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            6.5,
+            51.5,
+            -3.5
+          ],
+          [
+            7.5,
+            51.5,
+            -3.5
+          ],
+          [
+            7.5,
+            52.5,
+            -3.5
+          ],
+          [
+            6.5,
+            52.5,
+            -3.5
+          ],
+          [
+            6.5,
+            51.5,
+            -2.5
+          ],
+          [
+            7.5,
+            51.5,
+            -2.5
+          ],
+          [
+            7.5,
+            52.5,
+            -2.5
+          ],
+          [
+            6.5,
+            52.5,
+            -2.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          124,
+          89,
+          36
+        ],
+        "physical_center": [
+          15.0,
+          -56.0,
+          -47.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 1,
+        "mesh_element_index_zero_based": 1798893,
+        "mesh_node_ids_zero_based": [
+          1833271,
+          1858140,
+          1858302,
+          1833434,
+          1833272,
+          1858141,
+          1858303,
+          1833435
+        ],
+        "expected_physical_corners": [
+          [
+            14.5,
+            -56.5,
+            -47.5
+          ],
+          [
+            15.5,
+            -56.5,
+            -47.5
+          ],
+          [
+            15.5,
+            -55.5,
+            -47.5
+          ],
+          [
+            14.5,
+            -55.5,
+            -47.5
+          ],
+          [
+            14.5,
+            -56.5,
+            -46.5
+          ],
+          [
+            15.5,
+            -56.5,
+            -46.5
+          ],
+          [
+            15.5,
+            -55.5,
+            -46.5
+          ],
+          [
+            14.5,
+            -55.5,
+            -46.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            14.5,
+            -56.5,
+            -47.5
+          ],
+          [
+            15.5,
+            -56.5,
+            -47.5
+          ],
+          [
+            15.5,
+            -55.5,
+            -47.5
+          ],
+          [
+            14.5,
+            -55.5,
+            -47.5
+          ],
+          [
+            14.5,
+            -56.5,
+            -46.5
+          ],
+          [
+            15.5,
+            -56.5,
+            -46.5
+          ],
+          [
+            15.5,
+            -55.5,
+            -46.5
+          ],
+          [
+            14.5,
+            -55.5,
+            -46.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          131,
+          158,
+          150
+        ],
+        "physical_center": [
+          22.0,
+          13.0,
+          67.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 1,
+        "mesh_element_index_zero_based": 1978783,
+        "mesh_node_ids_zero_based": [
+          2016741,
+          2041129,
+          2041271,
+          2016883,
+          2016742,
+          2041130,
+          2041272,
+          2016884
+        ],
+        "expected_physical_corners": [
+          [
+            21.5,
+            12.5,
+            66.5
+          ],
+          [
+            22.5,
+            12.5,
+            66.5
+          ],
+          [
+            22.5,
+            13.5,
+            66.5
+          ],
+          [
+            21.5,
+            13.5,
+            66.5
+          ],
+          [
+            21.5,
+            12.5,
+            67.5
+          ],
+          [
+            22.5,
+            12.5,
+            67.5
+          ],
+          [
+            22.5,
+            13.5,
+            67.5
+          ],
+          [
+            21.5,
+            13.5,
+            67.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            21.5,
+            12.5,
+            66.5
+          ],
+          [
+            22.5,
+            12.5,
+            66.5
+          ],
+          [
+            22.5,
+            13.5,
+            66.5
+          ],
+          [
+            21.5,
+            13.5,
+            66.5
+          ],
+          [
+            21.5,
+            12.5,
+            67.5
+          ],
+          [
+            22.5,
+            12.5,
+            67.5
+          ],
+          [
+            22.5,
+            13.5,
+            67.5
+          ],
+          [
+            21.5,
+            13.5,
+            67.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          139,
+          107,
+          97
+        ],
+        "physical_center": [
+          30.0,
+          -38.0,
+          14.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 1,
+        "mesh_element_index_zero_based": 2158672,
+        "mesh_node_ids_zero_based": [
+          2200792,
+          2224116,
+          2224269,
+          2200945,
+          2200793,
+          2224117,
+          2224270,
+          2200946
+        ],
+        "expected_physical_corners": [
+          [
+            29.5,
+            -38.5,
+            13.5
+          ],
+          [
+            30.5,
+            -38.5,
+            13.5
+          ],
+          [
+            30.5,
+            -37.5,
+            13.5
+          ],
+          [
+            29.5,
+            -37.5,
+            13.5
+          ],
+          [
+            29.5,
+            -38.5,
+            14.5
+          ],
+          [
+            30.5,
+            -38.5,
+            14.5
+          ],
+          [
+            30.5,
+            -37.5,
+            14.5
+          ],
+          [
+            29.5,
+            -37.5,
+            14.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            29.5,
+            -38.5,
+            13.5
+          ],
+          [
+            30.5,
+            -38.5,
+            13.5
+          ],
+          [
+            30.5,
+            -37.5,
+            13.5
+          ],
+          [
+            29.5,
+            -37.5,
+            13.5
+          ],
+          [
+            29.5,
+            -38.5,
+            14.5
+          ],
+          [
+            30.5,
+            -38.5,
+            14.5
+          ],
+          [
+            30.5,
+            -37.5,
+            14.5
+          ],
+          [
+            29.5,
+            -37.5,
+            14.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          147,
+          127,
+          45
+        ],
+        "physical_center": [
+          38.0,
+          -18.0,
+          -38.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 1,
+        "mesh_element_index_zero_based": 2338561,
+        "mesh_node_ids_zero_based": [
+          2385276,
+          2407044,
+          2407187,
+          2385419,
+          2385277,
+          2407045,
+          2407188,
+          2385420
+        ],
+        "expected_physical_corners": [
+          [
+            37.5,
+            -18.5,
+            -38.5
+          ],
+          [
+            38.5,
+            -18.5,
+            -38.5
+          ],
+          [
+            38.5,
+            -17.5,
+            -38.5
+          ],
+          [
+            37.5,
+            -17.5,
+            -38.5
+          ],
+          [
+            37.5,
+            -18.5,
+            -37.5
+          ],
+          [
+            38.5,
+            -18.5,
+            -37.5
+          ],
+          [
+            38.5,
+            -17.5,
+            -37.5
+          ],
+          [
+            37.5,
+            -17.5,
+            -37.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            37.5,
+            -18.5,
+            -38.5
+          ],
+          [
+            38.5,
+            -18.5,
+            -38.5
+          ],
+          [
+            38.5,
+            -17.5,
+            -38.5
+          ],
+          [
+            37.5,
+            -17.5,
+            -38.5
+          ],
+          [
+            37.5,
+            -18.5,
+            -37.5
+          ],
+          [
+            38.5,
+            -18.5,
+            -37.5
+          ],
+          [
+            38.5,
+            -17.5,
+            -37.5
+          ],
+          [
+            37.5,
+            -17.5,
+            -37.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          156,
+          120,
+          50
+        ],
+        "physical_center": [
+          47.0,
+          -25.0,
+          -33.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 1,
+        "mesh_element_index_zero_based": 2518451,
+        "mesh_node_ids_zero_based": [
+          2570845,
+          2590106,
+          2590235,
+          2570974,
+          2570846,
+          2590107,
+          2590236,
+          2570975
+        ],
+        "expected_physical_corners": [
+          [
+            46.5,
+            -25.5,
+            -33.5
+          ],
+          [
+            47.5,
+            -25.5,
+            -33.5
+          ],
+          [
+            47.5,
+            -24.5,
+            -33.5
+          ],
+          [
+            46.5,
+            -24.5,
+            -33.5
+          ],
+          [
+            46.5,
+            -25.5,
+            -32.5
+          ],
+          [
+            47.5,
+            -25.5,
+            -32.5
+          ],
+          [
+            47.5,
+            -24.5,
+            -32.5
+          ],
+          [
+            46.5,
+            -24.5,
+            -32.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            46.5,
+            -25.5,
+            -33.5
+          ],
+          [
+            47.5,
+            -25.5,
+            -33.5
+          ],
+          [
+            47.5,
+            -24.5,
+            -33.5
+          ],
+          [
+            46.5,
+            -24.5,
+            -33.5
+          ],
+          [
+            46.5,
+            -25.5,
+            -32.5
+          ],
+          [
+            47.5,
+            -25.5,
+            -32.5
+          ],
+          [
+            47.5,
+            -24.5,
+            -32.5
+          ],
+          [
+            46.5,
+            -24.5,
+            -32.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          167,
+          95,
+          58
+        ],
+        "physical_center": [
+          58.0,
+          -50.0,
+          -25.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 1,
+        "mesh_element_index_zero_based": 2698340,
+        "mesh_node_ids_zero_based": [
+          2758681,
+          2773464,
+          2773591,
+          2758809,
+          2758682,
+          2773465,
+          2773592,
+          2758810
+        ],
+        "expected_physical_corners": [
+          [
+            57.5,
+            -50.5,
+            -25.5
+          ],
+          [
+            58.5,
+            -50.5,
+            -25.5
+          ],
+          [
+            58.5,
+            -49.5,
+            -25.5
+          ],
+          [
+            57.5,
+            -49.5,
+            -25.5
+          ],
+          [
+            57.5,
+            -50.5,
+            -24.5
+          ],
+          [
+            58.5,
+            -50.5,
+            -24.5
+          ],
+          [
+            58.5,
+            -49.5,
+            -24.5
+          ],
+          [
+            57.5,
+            -49.5,
+            -24.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            57.5,
+            -50.5,
+            -25.5
+          ],
+          [
+            58.5,
+            -50.5,
+            -25.5
+          ],
+          [
+            58.5,
+            -49.5,
+            -25.5
+          ],
+          [
+            57.5,
+            -49.5,
+            -25.5
+          ],
+          [
+            57.5,
+            -50.5,
+            -24.5
+          ],
+          [
+            58.5,
+            -50.5,
+            -24.5
+          ],
+          [
+            58.5,
+            -49.5,
+            -24.5
+          ],
+          [
+            57.5,
+            -49.5,
+            -24.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      },
+      {
+        "voxel_index": [
+          192,
+          125,
+          96
+        ],
+        "physical_center": [
+          83.0,
+          -20.0,
+          13.0
+        ],
+        "element_count_at_voxel": 1,
+        "mesh_attribute": 5,
+        "mesh_element_index_zero_based": 2878230,
+        "mesh_node_ids_zero_based": [
+          2958144,
+          2958272,
+          2958276,
+          2958153,
+          2958145,
+          2958273,
+          2958277,
+          2958154
+        ],
+        "expected_physical_corners": [
+          [
+            82.5,
+            -20.5,
+            12.5
+          ],
+          [
+            83.5,
+            -20.5,
+            12.5
+          ],
+          [
+            83.5,
+            -19.5,
+            12.5
+          ],
+          [
+            82.5,
+            -19.5,
+            12.5
+          ],
+          [
+            82.5,
+            -20.5,
+            13.5
+          ],
+          [
+            83.5,
+            -20.5,
+            13.5
+          ],
+          [
+            83.5,
+            -19.5,
+            13.5
+          ],
+          [
+            82.5,
+            -19.5,
+            13.5
+          ]
+        ],
+        "mesh_physical_corners": [
+          [
+            82.5,
+            -20.5,
+            12.5
+          ],
+          [
+            83.5,
+            -20.5,
+            12.5
+          ],
+          [
+            83.5,
+            -19.5,
+            12.5
+          ],
+          [
+            82.5,
+            -19.5,
+            12.5
+          ],
+          [
+            82.5,
+            -20.5,
+            13.5
+          ],
+          [
+            83.5,
+            -20.5,
+            13.5
+          ],
+          [
+            83.5,
+            -19.5,
+            13.5
+          ],
+          [
+            82.5,
+            -19.5,
+            13.5
+          ]
+        ],
+        "max_corner_discrepancy_mm": 0.0
+      }
+    ]
+  },
+  "volume_conservation": {
+    "source_total_mm3": 2878231.0,
+    "mesh_total_mm3": 2878231.0,
+    "absolute_difference_mm3": 0.0,
+    "relative_difference": 0.0,
+    "method_a": "material label voxel counts x abs(det(NIfTI affine linear block))",
+    "method_b": "sum of signed affine HEX8 Jacobian determinants"
+  },
+  "gates": {
+    "mesh_sha256_match": true,
+    "expected_element_counts": true,
+    "valid_material_ids": true,
+    "valid_interface_ids": true,
+    "physical_coordinate_mapping": true,
+    "inverted_hex8_zero": true,
+    "degenerate_hex8_zero": true,
+    "nonmanifold_faces_zero": true,
+    "cracks_or_nonconforming_faces_zero": true,
+    "forbidden_material_adjacencies_zero": true,
+    "unintended_internal_background_zero": true,
+    "interface_reconciliation_exact": true,
+    "orphan_quad4_zero": true,
+    "duplicate_quad4_zero": true,
+    "invalid_quad4_zero": true,
+    "image_to_mesh_material_mapping_exact": true,
+    "tumor_preservation_exact": true,
+    "mesh_to_image_reconstruction_exact": true,
+    "material_volume_reconciliation_pass": true,
+    "connectivity_valid": true,
+    "image_mesh_component_structure_matches": true,
+    "only_scalp_contacts_exterior": true,
+    "all_boundary_faces_have_quad": true,
+    "all_expected_material_counts_match_labels": true,
+    "tumor_source_padding_mapping_exact": true
+  },
+  "audit": {
+    "wall_seconds": 65.70166785904439,
+    "peak_rss_bytes": 6307569664,
+    "final_rss_bytes": 5279510528
+  },
+  "scope_statement": "This certification establishes geometric, topological, material-label, interface, coordinate, and image-to-mesh fidelity of the authoritative computational mesh. It does not make claims about solution accuracy, discretization convergence, constitutive model validity, or biomechanical prediction accuracy.",
+  "methods_summary": "A patient-specific conforming five-region voxel-based hexahedral computational mesh was generated from the MRI-derived material segmentation. Independent mesh certification demonstrated valid and non-degenerate hexahedral geometry, conforming volumetric connectivity, exact material and interface reconciliation, valid physical-coordinate mapping, absence of forbidden material contacts and unintended internal cavities, and exact preservation of the original tumor segmentation. Reverse reconstruction of the material-label image from the exported mesh confirmed image-to-mesh material fidelity."
+}

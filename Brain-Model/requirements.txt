@@ -1,0 +1,9 @@
+numpy>=1.23
+scipy>=1.9
+nibabel>=4.0
+scikit-image>=0.19
+gmsh>=4.11
+meshio>=5.3
+pyvista>=0.40
+# HD-BET is installed from its source repository with CPU-only PyTorch;
+# see README.md for the reproducible installation commands.

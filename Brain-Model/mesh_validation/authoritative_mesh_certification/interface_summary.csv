@@ -1,0 +1,6 @@
+tag,name,faces,area_mm2,min_area_mm2,max_area_mm2,mean_area_mm2,components,normal_x_abs,normal_y_abs,normal_z_abs
+101,TumorInterface,21094,21094.0,1.0,1.0,1.0,1,9148,5422,6524
+102,BrainCSFInterface,131310,131310.0,1.0,1.0,1.0,1,46726,41024,43560
+103,CSFSkullInterface,137498,137498.0,1.0,1.0,1.0,1,48838,43016,45644
+104,SkullScalpInterface,147048,147048.0,1.0,1.0,1.0,1,52088,46136,48824
+105,ScalpExterior,159038,159038.0,1.0,1.0,1.0,1,56020,49940,53078

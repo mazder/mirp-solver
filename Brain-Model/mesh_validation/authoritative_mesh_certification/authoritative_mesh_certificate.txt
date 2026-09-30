@@ -1,0 +1,61 @@
+AUTHORITATIVE FULL-RESOLUTION MESH CERTIFICATION
+============================================================
+CLASSIFICATION: AUTHORITATIVE_PATIENT_MESH_GEOMETRICALLY_AND_TOPOLOGICALLY_CERTIFIED
+MESH_CERTIFIED = YES
+MESHING_MVP = COMPLETE
+
+Mesh: EGD-0001/MR_EGD-0001/meshing/phase4b_mesh/head_tumor_5region.msh
+SHA256: b66dd853c27c465636fd518c6e03b1540d1538681558778f722e6c2e613ddd85
+Bytes: 320,808,250
+Source labels: EGD-0001/MR_EGD-0001/preprocessing/phase3b_results/material_labels.nii.gz
+Label SHA256: fea9ca999831b5a8eb4a9c3d6cac1dcc9a175fd824bec5f0a9cd79d6b041cb07
+Original tumor: EGD-0001/MR_EGD-0001/5_MASK/NIFTI/MASK.nii.gz
+Tumor SHA256: 9b18fb47db2ffef5eb245aa0bb1ffe9f5834f33b5dd09ae7b4a8355c6da411f5
+
+MSH 2.2; vertices=2,958,278; HEX8=2,878,231; QUAD4=595,988
+HEX by material: {1: 1968564, 2: 82652, 3: 162698, 4: 280585, 5: 383732}
+QUAD by interface: {101: 21094, 102: 131310, 103: 137498, 104: 147048, 105: 159038}
+HEX volume min/max/mean: 1 / 1 / 1 mm^3
+Jacobian min/max: 1 / 1
+Scaled Jacobian min/max: 1 / 1
+Edges min/max: 1 / 1 mm
+Max aspect ratio: 1
+Volume faces: unique=8,714,212, internal=8,555,174, exterior=159,038, nonmanifold=0
+Material adjacency: {'1-2': 21094, '1-3': 131310, '3-4': 137498, '4-5': 147048}
+Forbidden adjacencies: 0
+QUAD checks: orphan=0, duplicate=0, semantic=0, missing=0, unexpected=0, invalid geometry=0
+Tumor exact=True; FN=0; FP=0; Dice=1; Jaccard=1; centroid delta=0 mm
+Image reconstruction differing voxels: 0; max node discrepancy=0 mm
+Internal background: 0 components, 0 voxels
+Audit elapsed: 65.7s; peak RSS=6.308 GB
+
+GATES:
+  PASS mesh_sha256_match
+  PASS expected_element_counts
+  PASS valid_material_ids
+  PASS valid_interface_ids
+  PASS physical_coordinate_mapping
+  PASS inverted_hex8_zero
+  PASS degenerate_hex8_zero
+  PASS nonmanifold_faces_zero
+  PASS cracks_or_nonconforming_faces_zero
+  PASS forbidden_material_adjacencies_zero
+  PASS unintended_internal_background_zero
+  PASS interface_reconciliation_exact
+  PASS orphan_quad4_zero
+  PASS duplicate_quad4_zero
+  PASS invalid_quad4_zero
+  PASS image_to_mesh_material_mapping_exact
+  PASS tumor_preservation_exact
+  PASS mesh_to_image_reconstruction_exact
+  PASS material_volume_reconciliation_pass
+  PASS connectivity_valid
+  PASS image_mesh_component_structure_matches
+  PASS only_scalp_contacts_exterior
+  PASS all_boundary_faces_have_quad
+  PASS all_expected_material_counts_match_labels
+  PASS tumor_source_padding_mapping_exact
+
+This certification establishes geometric, topological, material-label, interface, coordinate, and image-to-mesh fidelity of the authoritative computational mesh. It does not make claims about solution accuracy, discretization convergence, constitutive model validity, or biomechanical prediction accuracy.
+
+Methods/Validation summary: A patient-specific conforming five-region voxel-based hexahedral computational mesh was generated from the MRI-derived material segmentation. Independent mesh certification demonstrated valid and non-degenerate hexahedral geometry, conforming volumetric connectivity, exact material and interface reconciliation, valid physical-coordinate mapping, absence of forbidden material contacts and unintended internal cavities, and exact preservation of the original tumor segmentation. Reverse reconstruction of the material-label image from the exported mesh confirmed image-to-mesh material fidelity.
